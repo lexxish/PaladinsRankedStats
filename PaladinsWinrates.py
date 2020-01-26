@@ -96,7 +96,6 @@ while True:
 								Print('Match in progress')
 								sys.exit()
 							m = ''
-							mn = 0
 				except Exception as e:
 					print(f'Error: {e}')
 					time.sleep(60)
