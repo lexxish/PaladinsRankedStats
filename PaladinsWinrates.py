@@ -209,7 +209,7 @@ while True:
 			break
 
 		RankWinrates = str(RankWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1]
-		for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master']: RankWinrates = RankWinrates.replace(r, f'{r}:' +	AvgRankWinrates[r])
+		for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master']: RankWinrates = RankWinrates.replace(r, f'{r}: ' +	AvgRankWinrates[r])
 		open(f'{basedir}RankWinrates.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,v{patch} Champion Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + RankWinrates)
 		
 		sheet = gc1.open_by_key(googlesheetid)
@@ -240,7 +240,9 @@ while True:
 		
 		sheet = gc1.open_by_key(googlesheetid).worksheet('By Talent (All Ranks)')
 		while True:
-			try: format_cell_range(sheet, f'B2:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+			try:
+				format_cell_range(sheet, 'A1:E1', cellFormat(textFormat=textFormat(bold=True)))
+				format_cell_range(sheet, f'B2:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
 			except:
 				sheet = gc2.open_by_key(googlesheetid).worksheet('By Talent (All Ranks)')
 				continue
@@ -260,8 +262,10 @@ while True:
 					continue
 				n += 1
 				break
-			
-		open(f'{basedir}Diamond+TalentWinrates.csv', 'w').write(f'Class,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(DiamondPlusTalentWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1])
+		
+		diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
+		diawr = str(diawr*100).split('.')[0] + '%'
+		open(f'{basedir}Diamond+TalentWinrates.csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr},,,,,,\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(DiamondPlusTalentWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1])
 		
 		sheet = gc1.open_by_key(googlesheetid)
 		while True:
@@ -277,7 +281,9 @@ while True:
 		
 		sheet = gc1.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
 		while True:
-			try: format_cell_range(sheet, f'B2:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+			try:
+				format_cell_range(sheet, 'A1:E2', cellFormat(textFormat=textFormat(bold=True)))
+				format_cell_range(sheet, f'B3:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
 			except:
 				sheet = gc2.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
 				continue
