@@ -223,7 +223,7 @@ while True:
 				continue
 			break
 
-		open(f'{basedir}TalentWinrates.csv', 'w').write(f'Source Code: https://github.com/Aevann1/PaladinsWinrates,,,,,,\nDiscord Server: https://discord.gg/rext5zv,,,,,,\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(TalentWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1])
+		open(f'{basedir}TalentWinrates.csv', 'w').write(f'Source Code: https://github.com/Aevann1/PaladinsWinrates\nDiscord Server: https://discord.gg/rext5zv\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(TalentWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1])
 		
 		sheet = gc1.open_by_key(googlesheetid)
 		while True:
@@ -264,7 +264,7 @@ while True:
 		
 		diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
 		diawr = str(diawr*100).split('.')[0] + '%'
-		open(f'{basedir}Diamond+TalentWinrates.csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr},,,,,,\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(DiamondPlusTalentWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1])
+		open(f'{basedir}Diamond+TalentWinrates.csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr}\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(DiamondPlusTalentWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1])
 		
 		sheet = gc1.open_by_key(googlesheetid)
 		while True:
