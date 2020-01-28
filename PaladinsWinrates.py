@@ -25,7 +25,6 @@ while True:
 		basedir = basedir0 + f'/{patch} {queue} '
 
 		rankindex = ['Qualifying', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Silver', 'Silver', 'Silver', 'Silver', 'Silver', 'Gold', 'Gold', 'Gold', 'Gold', 'Gold', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Master', 'Master']
-		cclass = {"Androxus": "Flank", "Ash": "Frontline", "Atlas": "Frontline", "Barik": "Frontline", "Bomb King": "Damage", "Buck": "Flank", "Cassie": "Damage", "Dredge": "Damage", "Drogoz": "Damage", "Evie": "Flank", "Fernando": "Frontline", "Furia": "Support", "Grohk": "Support", "Grover": "Support", "Imani": "Damage", "Inara": "Frontline", "Io": "Support", "Jenos": "Support", "Khan": "Frontline", "Kinessa": "Damage", "Koga": "Flank", "Lex": "Flank", "Lian": "Damage", "Maeve": "Flank", "Makoa": "Frontline", "Mal'Damba": "Support", "Moji": "Flank", "Pip": "Support", "Raum": "Frontline", "Ruckus": "Frontline", "Seris": "Support", "Sha Lin": "Damage", "Skye": "Flank", "Strix": "Damage", "Talus": "Flank", "Terminus": "Frontline", "Tiberius": "Damage", "Torvald": "Frontline", "Tyra": "Damage", "Viktor": "Damage", "Vivian": "Damage", "Willo": "Damage", "Ying": "Support", "Zhin": "Flank"}
 
 		try: open(f'{basedir}Matchcount.json').read()
 		except:
@@ -92,9 +91,6 @@ while True:
 								wincount[champskin] += 1
 								wincount[rank] += 1
 								if rank == 'Diamond' or rank == 'Master': wincount[rankchamptalent] += 1
-							elif player['Win_Status'] != 'Loser':
-								Print('Match in progress')
-								sys.exit()
 							m = ''
 				except Exception as e:
 					print(f'Error: {e}')
@@ -117,7 +113,11 @@ while True:
 			open(f'{basedir}Wincount.json', 'w').write(str(day) + json.dumps(wincount))
 			open(f'{basedir0}/PaladinsWinrates Backup/{patch} {queue} Matchcount {day} {hour}.json', 'w').write(str(day) + json.dumps(matchcount))
 			open(f'{basedir0}/PaladinsWinrates Backup/{patch} {queue} Wincount {day} {hour}.json', 'w').write(str(day) + json.dumps(wincount))
-
+		
+		cclasses = enumerate(json.loads(requests.get(f'http://api.paladins.com/paladinsapi.svc/getchampionsjson/{devid}/' + hashlib.md5((f'{devid}getchampions{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/1').content))
+		cclass = {}
+		for ln, lc in cclasses: cclass[lc['Name']] = lc['Roles'].replace('Paladins ', '').replace('Flanker', 'Flank').replace('Front Line', 'Frontline')
+		
 		WR = []
 		for i1, i2 in matchcount.items():
 			winrate = str(wincount[i1] / i2)[:4]
@@ -154,7 +154,7 @@ while True:
 				i0 = cclass[i[0].split(',')[0]] + f',{i[0]}'
 				i0 = i0.replace("Support,Grohk,Maelstrom", "Damage,Grohk,Maelstrom").replace("Support,Pip,Catalyst", "Flank,Pip,Catalyst").replace("Flank,Skye,Smoke and Dagger", "Support,Skye,Smoke and Dagger")
 				TalentWinrates.append((i0, D, E, C1, C2))
-
+		
 		SkinWinrates.sort(key=lambda x:x[2], reverse=True)
 		SkinWinrates.sort(key=lambda x:x[1], reverse=True)
 		SkinWinrates.sort(key=lambda x:x[3], reverse=True)
@@ -223,7 +223,7 @@ while True:
 				continue
 			break
 
-		open(f'{basedir}TalentWinrates.csv', 'w').write(f'Class,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(TalentWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1])
+		open(f'{basedir}TalentWinrates.csv', 'w').write(f'Source Code: https://github.com/Aevann1/PaladinsWinrates/blob/master/PaladinsWinrates.py,,,,,,\nDiscord Server: https://discord.gg/rext5zv,,,,,,\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(TalentWinrates).replace('"' , "'").replace("'), ('" , "\n").replace("', '" , ",").replace("')", "")[3:-1])
 		
 		sheet = gc1.open_by_key(googlesheetid)
 		while True:
@@ -240,8 +240,8 @@ while True:
 		sheet = gc1.open_by_key(googlesheetid).worksheet('By Talent (All Ranks)')
 		while True:
 			try:
-				format_cell_range(sheet, 'A1:E1', cellFormat(textFormat=textFormat(bold=True)))
-				format_cell_range(sheet, f'B2:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+				format_cell_range(sheet, 'A1:E3', cellFormat(textFormat=textFormat(bold=True)))
+				format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
 			except:
 				sheet = gc2.open_by_key(googlesheetid).worksheet('By Talent (All Ranks)')
 				continue
