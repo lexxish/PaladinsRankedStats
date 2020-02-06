@@ -497,7 +497,7 @@ while True:
 					continue
 				break
 
-			open(f'{basedir2}talentWRs.csv', 'w').write(f'Source Code: https://github.com/Aevann1/PaladinsWinrates - Discord Server: https://discord.gg/rext5zv\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}talentWRs.csv', 'w').write(f'Source Code: https://github.com/Aevann1/PaladinsWinrates\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 		
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
