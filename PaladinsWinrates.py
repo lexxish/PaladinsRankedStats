@@ -36,8 +36,14 @@ while True:
 		while day0 <= date:
 			day = str(day0).replace('-', '')
 			print(f'{queue} {day}')
-			if queue == '486': googlesheetid = '1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg'
-			else: googlesheetid = '12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g'
+			if queue == '486':
+				googlesheetid = '1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg'
+				otherversion = 'Controller Version: docs.google.com/spreadsheets/d/12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g'
+				bansheet = 'Keyboard & Mouse'
+			else:
+				googlesheetid = '12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g'
+				otherversion = 'Keyboard & Mouse Version: docs.google.com/spreadsheets/d/1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg'
+				bansheet = 'Controller'
 			try:
 				matchcount = json.loads(open(f'{basedir2}matchcount.json').read()[8:])
 				wincount = json.loads(open(f'{basedir2}wincount.json').read()[8:])
@@ -75,6 +81,8 @@ while True:
 				enemymatchcount = {}
 				enemywincount = {}
 			
+			bancount = {}
+			banmatchcount = 0
 			t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
 			while True:
 				try:
@@ -98,11 +106,7 @@ while True:
 						except Exception as e: 
 							print(e)
 							continue
-						break		
-					if '"Reference_Name":null' in str(mdata):
-						print(mdata)
-						print(m)
-						sys.exit()
+						break
 					m = ''
 					print(f'{x}/{n}')
 					D = 0
@@ -111,6 +115,16 @@ while True:
 					T = 0
 					playernumber = 0
 					li = list(mdata.split(',{"Account_Level'))
+					if len(li) == 100:
+						for pn in [0,10,20,30,40,50,60,70,80,90]:
+							player = li[pn]
+							if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
+							player = json.loads(player)
+							for ban in ['Ban_1', 'Ban_2', 'Ban_3', 'Ban_4']:
+								ban = player[ban]
+								if ban not in bancount: bancount[ban] = 0
+								bancount[ban] += 1
+							banmatchcount += 1
 					for player in li:
 						if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
 						player = json.loads(player)
@@ -118,7 +132,6 @@ while True:
 						except Exception as e:
 							print(e)
 							print(mdata)
-							print('nigga')
 							print(player)
 							sys.exit()
 						if len(li) == 100:
@@ -232,12 +245,33 @@ while True:
 					print(e)
 					continue
 				break							
-
+					
 			gcs = [gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(f'{basedir1}/sheetsapikey1.json', ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(f'{basedir1}/sheetsapikey2.json', ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(f'{basedir1}/sheetsapikey3.json', ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))]
-		
 			gcn = 0
 			gc = gcs[gcn]
 			
+			banrate = []
+			for k, v in bancount.items():
+				br = str(v/banmatchcount*100).split('.')[0] + '%'
+				if len(br) == 2: br = f'0{br}'
+				banrate.append((k, br))
+			banrate.sort(key=lambda x: x[1], reverse=True)
+			open(f'{basedir2}banrate.csv', 'w').write(f'Champion,{day} Ban Rate\n' + str(banrate).replace("'), ('" , '\n').replace("', '" , ",")[3:-3])
+			sheet = gc.open_by_key('1ioKxQBjBDjGJXJQtrKQwrGhCW0F_D3e1bHBirGo5sWQ')
+			while True:
+				try:
+					sheet.values_update(
+						bansheet,
+						params={'valueInputOption': 'USER_ENTERED'},
+						body={'values': list(csv.reader(open(f'{basedir2}banrate.csv')))})
+				except Exception as e:
+					print(json.loads(str(e))['error']['message'])
+					gcn += 1
+					gc = gcs[gcn]
+					sheet = gc.open_by_key('1ioKxQBjBDjGJXJQtrKQwrGhCW0F_D3e1bHBirGo5sWQ')
+					continue
+				break
+
 			if hour == '-1':
 				open(f'{basedir2}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
 				open(f'{basedir2}wincount.json', 'w').write(str(day) +  json.dumps(wincount))
@@ -272,7 +306,7 @@ while True:
 					
 			cardWRs.sort(key=lambda x:(x[0].split(',')[2], x[3], x[1], x[2]), reverse=True)
 			cardWRs.sort(key=lambda x:(x[0].split(',')[0]))
-			open(f'{basedir2}cardWRs.csv', 'w').write(str(f'Champion,Card,Card Level,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(cardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]))
+			open(f'{basedir2}cardWRs.csv', 'w').write(f'Champion,Card,Card Level,v{patch} Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(cardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 			
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
@@ -308,7 +342,7 @@ while True:
 			
 			itemWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
 			itemWRs.sort(key=lambda x:(x[0].split(',')[0]))
-			open(f'{basedir2}itemWRs.csv', 'w').write(str(f'Champion,Item,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(itemWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]))
+			open(f'{basedir2}itemWRs.csv', 'w').write(f'Champion,Item,v{patch} Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(itemWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 			
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
@@ -343,7 +377,7 @@ while True:
 				compWRs.append((comp, D, E, C1, C2))
 				
 			compWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
-			open(f'{basedir2}compWRs.csv', 'w').write(str(f'Composition,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(compWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]))
+			open(f'{basedir2}compWRs.csv', 'w').write(f'Composition,v{patch} Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(compWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 						
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
@@ -379,7 +413,7 @@ while True:
 			
 			enemyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
 			enemyWRs.sort(key=lambda x:(x[0].split(',')[0]))
-			open(f'{basedir2}enemyWRs.csv', 'w').write(str(f'1st Champion,2nd Champion,v{patch} 1st Champion Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(enemyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]))
+			open(f'{basedir2}enemyWRs.csv', 'w').write(f'1st Champion,2nd Champion,v{patch} 1st Champion Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(enemyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 			
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
@@ -443,7 +477,7 @@ while True:
 			diamondpustalentwinrates.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
 			diamondpustalentwinrates.sort(key=lambda x: x[0].split(',')[0])
 
-			open(f'{basedir2}skinWRs.csv', 'w').write(f'Champion,Skin,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(skinwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}skinWRs.csv', 'w').write(f'Champion,Skin,v{patch} Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(skinwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 			
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
@@ -460,7 +494,7 @@ while True:
 					continue
 				break
 			
-			open(f'{basedir2}mapWRs.csv', 'w').write(f'Class,Champion,Map,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(mapwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}mapWRs.csv', 'w').write(f'Class,Champion,Map,v{patch} Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(mapwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 			
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
@@ -480,7 +514,7 @@ while True:
 			rankwinrates = str(rankwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]
 			rankwinrates = rankwinrates.replace('All Ranks', 'All Ranks: 50%')
 			for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master']: rankwinrates = rankwinrates.replace(r, f'{r}: ' +	avgrankwinrates[r])
-			open(f'{basedir2}rankWRs.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,v{patch} Champion Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + rankwinrates)
+			open(f'{basedir2}rankWRs.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,v{patch} Champion Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + rankwinrates)
 			
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
@@ -497,7 +531,7 @@ while True:
 					continue
 				break
 
-			open(f'{basedir2}talentWRs.csv', 'w').write(f'Source Code: https://github.com/Aevann1/PaladinsWinrates\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}talentWRs.csv', 'w').write(f'{otherversion}\nSource Code: github.com/Aevann1/PaladinsWinrates\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 		
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
@@ -517,8 +551,8 @@ while True:
 			sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (All Ranks)')
 			while True:
 				try:
-					format_cell_range(sheet, 'A1:E2', cellFormat(textFormat=textFormat(bold=True)))
-					format_cell_range(sheet, f'B3:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+					format_cell_range(sheet, 'A1:E3', cellFormat(textFormat=textFormat(bold=True)))
+					format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
 				except Exception as e:
 					print(json.loads(str(e))['error']['message'])
 					gcn += 1
@@ -549,7 +583,7 @@ while True:
 			
 			diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
 			diawr = str(diawr*100).split('.')[0] + '%'
-			open(f'{basedir2}diamondplustalentWRs.csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr}\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval (-),Confidence Interval (+)\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}diamondplustalentWRs.csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr}\nClass,Champion,Talent,v{patch} Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 			
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
