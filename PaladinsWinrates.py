@@ -26,7 +26,7 @@ while True:
 	if str(datetime.datetime.now().hour) in '0,1,2': date -= datetime.timedelta(days=2)
 	else: date -= datetime.timedelta(days=1)
 	date = date.date()
-	for queue in ['486','428']:
+	for queue in ['428', '486']:
 		basedir2 = f'{ basedir1}/{patch} {queue} '
 		try: day = open(f'{basedir2}matchcount.json').read()[:8]
 		except Exception as e:
@@ -39,11 +39,9 @@ while True:
 			if queue == '486':
 				googlesheetid = '1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg'
 				otherversion = 'Controller Version: docs.google.com/spreadsheets/d/12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g'
-				bansheet = 'Keyboard & Mouse'
 			else:
 				googlesheetid = '12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g'
 				otherversion = 'Keyboard & Mouse Version: docs.google.com/spreadsheets/d/1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg'
-				bansheet = 'Controller'
 			try:
 				matchcount = json.loads(open(f'{basedir2}matchcount.json').read()[8:])
 				wincount = json.loads(open(f'{basedir2}wincount.json').read()[8:])
@@ -82,7 +80,8 @@ while True:
 				enemywincount = {}
 			
 			bancount = {}
-			banmatchcount = 0
+			pickcount = {}
+			ratematchcount = 0
 			t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
 			while True:
 				try:
@@ -115,67 +114,61 @@ while True:
 					T = 0
 					playernumber = 0
 					li = list(mdata.split(',{"Account_Level'))
-					if len(li) == 100:
-						for pn in [0,10,20,30,40,50,60,70,80,90]:
-							player = li[pn]
-							if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
-							player = json.loads(player)
+						
+					for player in li:
+						if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
+						player = json.loads(player)
+						champ = player['Reference_Name'].replace('\\', '')
+						if champ not in pickcount: pickcount[champ] = 0
+						pickcount[champ] += 1
+						if len(li) != 100: continue
+						if str(playernumber)[-1:] == '0':
 							for ban in ['Ban_1', 'Ban_2', 'Ban_3', 'Ban_4']:
 								ban = player[ban]
 								if ban not in bancount: bancount[ban] = 0
 								bancount[ban] += 1
-							banmatchcount += 1
-					for player in li:
-						if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
-						player = json.loads(player)
-						try: champ = player['Reference_Name'].replace('\\', '')
-						except Exception as e:
-							print(e)
-							print(mdata)
-							print(player)
-							sys.exit()
-						if len(li) == 100:
-							playernumber += 1
-							if player['Item_Purch_6'] == 'Maelstrom': cc = 'Damage'
-							elif player['Item_Purch_6'] == 'Catalyst': cc =  'Flank'
-							elif player['Item_Purch_6'] == 'Smoke and Dagger': cc =  'Support'
-							else: cc = cclass[champ]
-							if cc == 'Damage': D += 1
-							if cc == 'Flank': F += 1
-							if cc == 'Support': S += 1
-							if cc == 'Frontline': T += 1
-							if playernumber % 5 == 0:
-								comp = f'{D}D-{F}F-{S}S-{T}T'
-								if comp not in compmatchcount:
-									compmatchcount[comp] = 0
-									compwincount[comp] = 0
-								compmatchcount[comp] += 1
-								if player['Win_Status'] == 'Winner': compwincount[comp] += 1
-								D = 0
-								F = 0
-								S = 0
-								T = 0
-							
-							if player['Item_Purch_6'] == '': continue
-							batchnumber = playernumber - (playernumber % 10)
-							if str(playernumber)[-1:] not in '6,7,8,9,0':
-								for lin in [5,6,7,8,9]:
-									lin += batchnumber
-									enemy = li[lin]
-									if not enemy.startswith('{"Account_Level'): enemy = '{"Account_Level' + enemy
-									enemy = json.loads(enemy)['Reference_Name']
-									champandenemy = f'{champ},{enemy}'
-									enemyandchamp = f'{enemy},{champ}'
-									if champandenemy not in enemymatchcount:
-										enemymatchcount[champandenemy] = 0
-										enemywincount[champandenemy] = 0
-										enemymatchcount[enemyandchamp] = 0
-										enemywincount[enemyandchamp] = 0
-									enemymatchcount[champandenemy] += 1
-									enemymatchcount[enemyandchamp] += 1
-									if player['Win_Status'] == 'Winner': enemywincount[champandenemy] += 1
-								
+							ratematchcount += 1
+						playernumber += 1
+						
+						if player['Item_Purch_6'] == 'Maelstrom': cc = 'Damage'
+						elif player['Item_Purch_6'] == 'Catalyst': cc =  'Flank'
+						elif player['Item_Purch_6'] == 'Smoke and Dagger': cc =  'Support'
+						else: cc = cclass[champ]
+						if cc == 'Damage': D += 1
+						if cc == 'Flank': F += 1
+						if cc == 'Support': S += 1
+						if cc == 'Frontline': T += 1
+						if playernumber % 5 == 0:
+							comp = f'{D}D-{F}F-{S}S-{T}T'
+							if comp not in compmatchcount:
+								compmatchcount[comp] = 0
+								compwincount[comp] = 0
+							compmatchcount[comp] += 1
+							if player['Win_Status'] == 'Winner': compwincount[comp] += 1
+							D = 0
+							F = 0
+							S = 0
+							T = 0
+						
 						if player['Item_Purch_6'] == '': continue
+						batchnumber = playernumber - (playernumber % 10)
+						if str(playernumber)[-1:] not in '6,7,8,9,0':
+							for lin in [5,6,7,8,9]:
+								lin += batchnumber
+								enemy = li[lin]
+								if not enemy.startswith('{"Account_Level'): enemy = '{"Account_Level' + enemy
+								enemy = json.loads(enemy)['Reference_Name']
+								champandenemy = f'{champ},{enemy}'
+								enemyandchamp = f'{enemy},{champ}'
+								if champandenemy not in enemymatchcount:
+									enemymatchcount[champandenemy] = 0
+									enemywincount[champandenemy] = 0
+									enemymatchcount[enemyandchamp] = 0
+									enemywincount[enemyandchamp] = 0
+								enemymatchcount[champandenemy] += 1
+								enemymatchcount[enemyandchamp] += 1
+								if player['Win_Status'] == 'Winner': enemywincount[champandenemy] += 1
+								
 						if champ not in cardmatchcount:
 							cardmatchcount[champ] = {}
 							cardwincount[champ] = {}
@@ -189,7 +182,6 @@ while True:
 							cardmatchcount[champ][card] += 1
 							if player['Win_Status'] == 'Winner': cardwincount[champ][card] += 1
 						
-
 						for item in [player['Item_Active_1'], player['Item_Active_2'], player['Item_Active_3'], player['Item_Active_4']]:
 							if item == '': break
 							item = f'{champ},{item}'
@@ -252,23 +244,26 @@ while True:
 			
 			banrate = []
 			for k, v in bancount.items():
-				br = str(v/banmatchcount*100).split('.')[0] + '%'
+				if k == None: continue
+				br = str(v/ratematchcount*100).split('.')[0] + '%'
 				if len(br) == 2: br = f'0{br}'
-				banrate.append((k, br))
-			banrate.sort(key=lambda x: x[1], reverse=True)
-			open(f'{basedir2}banrate.csv', 'w').write(f'Champion,{day} Ban Rate\n' + str(banrate).replace("'), ('" , '\n').replace("', '" , ",")[3:-3])
-			sheet = gc.open_by_key('1ioKxQBjBDjGJXJQtrKQwrGhCW0F_D3e1bHBirGo5sWQ')
+				pr = str(pickcount[k]/(ratematchcount-v)*100).split('.')[0] + '%'
+				if len(pr) == 2: pr = f'0{pr}'
+				banrate.append((k, br, pr))
+			banrate.sort(key=lambda x: (x[1], x[2]), reverse=True)
+			open(f'{basedir2}banrate.csv', 'w').write(f'Champion,{day} Banrate,{day} Pickrate when not banned\n' + str(banrate).replace('"', "'").replace("'), ('" , '\n').replace("', '" , ",")[3:-3])
+			sheet = gc.open_by_key(googlesheetid)
 			while True:
 				try:
 					sheet.values_update(
-						bansheet,
+						'Banrate',
 						params={'valueInputOption': 'USER_ENTERED'},
 						body={'values': list(csv.reader(open(f'{basedir2}banrate.csv')))})
 				except Exception as e:
 					print(json.loads(str(e))['error']['message'])
 					gcn += 1
 					gc = gcs[gcn]
-					sheet = gc.open_by_key('1ioKxQBjBDjGJXJQtrKQwrGhCW0F_D3e1bHBirGo5sWQ')
+					sheet = gc.open_by_key(googlesheetid)
 					continue
 				break
 
@@ -551,8 +546,8 @@ while True:
 			sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (All Ranks)')
 			while True:
 				try:
-					format_cell_range(sheet, 'A1:E3', cellFormat(textFormat=textFormat(bold=True)))
-					format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+					format_cell_range(sheet, 'A1:E4', cellFormat(textFormat=textFormat(bold=True)))
+					format_cell_range(sheet, f'B5:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
 				except Exception as e:
 					print(json.loads(str(e))['error']['message'])
 					gcn += 1
