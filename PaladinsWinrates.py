@@ -391,7 +391,7 @@ while True:
 			
 			enemyWRs = []
 			for item, enemymatchcount in enemymatchcount.items():
-				D = enemywincount[item] / enemymatchcount
+				D = (enemymatchcount - enemywincount[item]) / enemymatchcount
 				E = enemymatchcount
 				H = D*E
 				I = E-H
@@ -408,7 +408,7 @@ while True:
 			
 			enemyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
 			enemyWRs.sort(key=lambda x:(x[0].split(',')[0]))
-			open(f'{basedir2}enemyWRs.csv', 'w').write(f'1st Champion,2nd Champion,v{patch} 1st Champion Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(enemyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}enemyWRs.csv', 'w').write(f'1st Champion,2nd Champion,v{patch} 2nd Champion Winrate,v{patch} Match Count,Confidence Interval -,Confidence Interval +\n' + str(enemyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 			
 			sheet = gc.open_by_key(googlesheetid)
 			while True:
