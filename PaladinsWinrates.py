@@ -1,11 +1,17 @@
+#CONTACT ME FOR QUESTIONS AND SUGGESTIONS ON DISCORD Aevann#6346
 import sys, os, datetime, pytz, hashlib, requests, json, re, time, gspread, sys, datetime, os, csv, math
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread_formatting import *
 
-devid = '' #INSERT YOUR HIREZ DEV ID
-authkey = '' #INSERT YOUR HIREZ AUTH KEY
+devid = '' #INSERT YOUR API HIREZ DEV ID
+authkey = '' #INSERT YOUR HIREZ API AUTH KEY
+kbmgooglesheetid = '1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg' #INSERT YOUR KEYBOARD & MOUSE GOOGLE SHEET ID (YOU'LL FIND IT IN ITS URL)
+controllergooglesheetid = '12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g' #INSERT YOUR CONTROLLER GOOGLE SHEET ID (YOU'LL FIND IT IN ITS URL)
+basedir1 = os.path.dirname(os.path.realpath(__file__))
+sheetsapikey1 = f'{basedir1}/sheetsapikey1.json' #INSERT THE LOCATION OF YOUR FIRST GOOGLE SHEETS API KEY
+sheetsapikey2 = f'{basedir1}/sheetsapikey2.json' #INSERT THE LOCATION OF YOUR SECOND GOOGLE SHEETS API KEY
+sheetsapikey3 = f'{basedir1}/sheetsapikey3.json' #INSERT THE LOCATION OF YOUR THIRD GOOGLE SHEETS API KEY
 hour = '-1'
-
 rankindex = ['Qualifying', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Silver', 'Silver', 'Silver', 'Silver', 'Silver', 'Gold', 'Gold', 'Gold', 'Gold', 'Gold', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Master', 'Master', 'All Ranks']
 
 while True:
@@ -19,7 +25,6 @@ while True:
 			print(e)
 			continue
 		break		
-	basedir1 = os.path.dirname(os.path.realpath(__file__))
 	cclass = {}
 	for ln, lc in cclasses: cclass[lc['Name']] = lc['Roles'].replace('Paladins ', '').replace('Flanker', 'Flank').replace('Front Line', 'Frontline')
 	date = datetime.datetime.now()
@@ -37,11 +42,11 @@ while True:
 			day = str(day0).replace('-', '')
 			print(f'{queue} {day}')
 			if queue == '486':
-				googlesheetid = '1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg'
-				otherversion = 'Controller Version: docs.google.com/spreadsheets/d/12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g'
+				googlesheetid = kbmgooglesheetid
+				otherversion = f'Controller Version: docs.google.com/spreadsheets/d/{controllergooglesheetid}'
 			else:
-				googlesheetid = '12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g'
-				otherversion = 'Keyboard & Mouse Version: docs.google.com/spreadsheets/d/1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg'
+				googlesheetid = controllergooglesheetid
+				otherversion = f'Keyboard & Mouse Version: docs.google.com/spreadsheets/d/{kbmgooglesheetid}'
 			try:
 				matchcount = json.loads(open(f'{basedir2}matchcount.json').read()[8:])
 				wincount = json.loads(open(f'{basedir2}wincount.json').read()[8:])
@@ -238,7 +243,7 @@ while True:
 					continue
 				break							
 					
-			gcs = [gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(f'{basedir1}/sheetsapikey1.json', ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(f'{basedir1}/sheetsapikey2.json', ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(f'{basedir1}/sheetsapikey3.json', ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))]
+			gcs = [gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey1, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey2, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey3, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))]
 			gcn = 0
 			gc = gcs[gcn]
 			
@@ -270,8 +275,6 @@ while True:
 			if hour == '-1':
 				open(f'{basedir2}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
 				open(f'{basedir2}wincount.json', 'w').write(str(day) +  json.dumps(wincount))
-				open(f'{basedir1}/paladinswinrates backup/{patch} {queue} matchcount {day} {hour}.json', 'w').write(str(day) +  json.dumps(matchcount))
-				open(f'{basedir1}/paladinswinrates backup/{patch} {queue} wincount {day} {hour}.json', 'w').write(str(day) +  json.dumps(wincount))
 				open(f'{basedir2}cardmatchcount.json', 'w').write( json.dumps(cardmatchcount))
 				open(f'{basedir2}cardwincount.json', 'w').write( json.dumps(cardwincount))
 				open(f'{basedir2}itemmatchcount.json', 'w').write( json.dumps(itemmatchcount))
@@ -280,6 +283,20 @@ while True:
 				open(f'{basedir2}compwincount.json', 'w').write( json.dumps(compwincount))
 				open(f'{basedir2}enemymatchcount.json', 'w').write( json.dumps(enemymatchcount))
 				open(f'{basedir2}enemywincount.json', 'w').write( json.dumps(enemywincount))
+				
+				backupdir = f'{basedir1}/paladinswinrates data backup/{patch} {queue} '
+				try: os.mkdir(backupdir)
+				except FileExistsError: pass
+				open(f'{backupdir}matchcount {day}.json', 'w').write(str(day) +  json.dumps(matchcount))
+				open(f'{backupdir}wincount {day}.json', 'w').write(str(day) +  json.dumps(wincount))
+				open(f'{backupdir}cardmatchcount {day}.json', 'w').write( json.dumps(cardmatchcount))
+				open(f'{backupdir}cardwincount {day}.json', 'w').write( json.dumps(cardwincount))
+				open(f'{backupdir}itemmatchcount {day}.json', 'w').write( json.dumps(itemmatchcount))
+				open(f'{backupdir}itemwincount {day}.json', 'w').write( json.dumps(itemwincount))
+				open(f'{backupdir}compmatchcount {day}.json', 'w').write( json.dumps(compmatchcount))
+				open(f'{backupdir}compwincount {day}.json', 'w').write( json.dumps(compwincount))
+				open(f'{backupdir}enemymatchcount {day}.json', 'w').write( json.dumps(enemymatchcount))
+				open(f'{backupdir}enemywincount {day}.json', 'w').write( json.dumps(enemywincount))
 
 			cardWRs = []
 			for champ, cards in cardmatchcount.items():
@@ -546,8 +563,8 @@ while True:
 			sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (All Ranks)')
 			while True:
 				try:
-					format_cell_range(sheet, 'A1:E4', cellFormat(textFormat=textFormat(bold=True)))
-					format_cell_range(sheet, f'B5:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+					format_cell_range(sheet, 'A1:E3', cellFormat(textFormat=textFormat(bold=True)))
+					format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
 				except Exception as e:
 					print(json.loads(str(e))['error']['message'])
 					gcn += 1
