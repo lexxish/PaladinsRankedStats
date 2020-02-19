@@ -253,7 +253,7 @@ def calcandpost():
 	open(f'{basedir2}diamondplustalentWRs.csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	sheet = gc.open_by_key(googlesheetid)
-	for i in ['By Card', 'By Friendly Champion', 'By Party Size (Bronze to Platinum)', 'Banrates', 'Average Damage,Healing,Shielding Per Second']:
+	for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card', 'By Item', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'Banrates', 'Average Damage,Healing,Shielding Per Second']:
 		while True:
 			try:
 				sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
@@ -265,51 +265,51 @@ def calcandpost():
 				continue
 			break
 
-	#sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
-	#format_cell_range(sheet, 'A1:Z3', cellFormat(textFormat=textFormat(bold=True)))
-	#format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
-	#n = 1
-	#cnames = ''
-	#for val in gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)').col_values(2):
-		#while True:
-			#try:
-				#if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
-				#if val not in cnames:
-					#format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
-					#cnames += f'{val},'
-			#except Exception as e:
-				#if 'Quota exceeded for quota group' not in str(e):
-					#print(e)
-					#sys.exit()
-				#gcn += 1
-				#gc = gcs[gcn]
-				#sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
-				#continue
-			#n += 1
-			#break
+	sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
+	format_cell_range(sheet, 'A1:Z3', cellFormat(textFormat=textFormat(bold=True)))
+	format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+	n = 1
+	cnames = ''
+	for val in gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)').col_values(2):
+		while True:
+			try:
+				if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
+				if val not in cnames:
+					format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
+					cnames += f'{val},'
+			except Exception as e:
+				if 'Quota exceeded for quota group' not in str(e):
+					print(e)
+					sys.exit()
+				gcn += 1
+				gc = gcs[gcn]
+				sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
+				continue
+			n += 1
+			break
 
-	#sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
-	#format_cell_range(sheet, 'A1:Z2', cellFormat(textFormat=textFormat(bold=True)))
-	#format_cell_range(sheet, f'B3:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
-	#n = 1
-	#cnames = ''
-	#for val in gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)').col_values(2):
-		#while True:
-			#try:
-				#if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
-				#if val not in cnames:
-					#format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
-					#cnames += f'{val},'
-			#except Exception as e:			
-				#if 'Quota exceeded for quota group' not in str(e):
-					#print(e)
-					#sys.exit()
-				#gcn += 1
-				#gc = gcs[gcn]
-				#sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
-				#continue
-			#n += 1
-			#break
+	sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
+	format_cell_range(sheet, 'A1:Z2', cellFormat(textFormat=textFormat(bold=True)))
+	format_cell_range(sheet, f'B3:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+	n = 1
+	cnames = ''
+	for val in gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)').col_values(2):
+		while True:
+			try:
+				if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
+				if val not in cnames:
+					format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
+					cnames += f'{val},'
+			except Exception as e:			
+				if 'Quota exceeded for quota group' not in str(e):
+					print(e)
+					sys.exit()
+				gcn += 1
+				gc = gcs[gcn]
+				sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
+				continue
+			n += 1
+			break
 
 while True:
 	t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
@@ -594,31 +594,30 @@ while True:
 				except Exception as e: 
 					print(e)
 					continue
-				break							
-			
-			if not os.path.exists(basedir2): os.mkdir(basedir2)
-			open(f'{basedir2}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
-			open(f'{basedir2}wincount.json', 'w').write(json.dumps(wincount))
-			open(f'{basedir2}cardmatchcount.json', 'w').write(json.dumps(cardmatchcount))
-			open(f'{basedir2}cardwincount.json', 'w').write(json.dumps(cardwincount))
-			open(f'{basedir2}itemmatchcount.json', 'w').write(json.dumps(itemmatchcount))
-			open(f'{basedir2}itemwincount.json', 'w').write(json.dumps(itemwincount))
-			open(f'{basedir2}compmatchcount.json', 'w').write(json.dumps(compmatchcount))
-			open(f'{basedir2}compwincount.json', 'w').write(json.dumps(compwincount))
-			open(f'{basedir2}friendlymatchcount.json', 'w').write(json.dumps(friendlymatchcount))
-			open(f'{basedir2}friendlywincount.json', 'w').write(json.dumps(friendlywincount))
-			open(f'{basedir2}enemymatchcount.json', 'w').write(json.dumps(enemymatchcount))
-			open(f'{basedir2}enemywincount.json', 'w').write(json.dumps(enemywincount))
-			open(f'{basedir2}dps.json', 'w').write(json.dumps(dps))
-			open(f'{basedir2}hps.json', 'w').write(json.dumps(hps))
-			open(f'{basedir2}sps.json', 'w').write(json.dumps(sps))
-			open(f'{basedir2}avgmatchcount.json', 'w').write(json.dumps(avgmatchcount))
-			open(f'{basedir2}bancount.json', 'w').write(f'{ratematchcount} - ' +  json.dumps(bancount))
-			open(f'{basedir2}pickcount.json', 'w').write(json.dumps(pickcount))
-			open(f'{basedir2}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
-			open(f'{basedir2}partywincount.json', 'w').write(json.dumps(partywincount))
-			
+				break
+
 			if hour == '-1':
+				if not os.path.exists(basedir2): os.mkdir(basedir2)
+				open(f'{basedir2}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
+				open(f'{basedir2}wincount.json', 'w').write(json.dumps(wincount))
+				open(f'{basedir2}cardmatchcount.json', 'w').write(json.dumps(cardmatchcount))
+				open(f'{basedir2}cardwincount.json', 'w').write(json.dumps(cardwincount))
+				open(f'{basedir2}itemmatchcount.json', 'w').write(json.dumps(itemmatchcount))
+				open(f'{basedir2}itemwincount.json', 'w').write(json.dumps(itemwincount))
+				open(f'{basedir2}compmatchcount.json', 'w').write(json.dumps(compmatchcount))
+				open(f'{basedir2}compwincount.json', 'w').write(json.dumps(compwincount))
+				open(f'{basedir2}friendlymatchcount.json', 'w').write(json.dumps(friendlymatchcount))
+				open(f'{basedir2}friendlywincount.json', 'w').write(json.dumps(friendlywincount))
+				open(f'{basedir2}enemymatchcount.json', 'w').write(json.dumps(enemymatchcount))
+				open(f'{basedir2}enemywincount.json', 'w').write(json.dumps(enemywincount))
+				open(f'{basedir2}dps.json', 'w').write(json.dumps(dps))
+				open(f'{basedir2}hps.json', 'w').write(json.dumps(hps))
+				open(f'{basedir2}sps.json', 'w').write(json.dumps(sps))
+				open(f'{basedir2}avgmatchcount.json', 'w').write(json.dumps(avgmatchcount))
+				open(f'{basedir2}bancount.json', 'w').write(f'{ratematchcount} - ' +  json.dumps(bancount))
+				open(f'{basedir2}pickcount.json', 'w').write(json.dumps(pickcount))
+				open(f'{basedir2}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
+				open(f'{basedir2}partywincount.json', 'w').write(json.dumps(partywincount))
 				backupdir = f'{basedir1}/paladinsrankeddata backup/{patch} {queue}/'
 				if not os.path.exists(backupdir): os.mkdir(backupdir)
 				backupdir += f'{day} '
