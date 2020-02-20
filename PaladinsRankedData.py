@@ -35,7 +35,9 @@ def calcandpost():
 	bancount = json.loads(open(f'{basedir2}bancount.json').read().split(' - ')[1])
 	pickcount = json.loads(open(f'{basedir2}pickcount.json').read())
 	ratematchcount = int(open(f'{basedir2}bancount.json').read().split(' - ')[0])
-	
+	partymatchcount = json.loads(open(f'{basedir2}partymatchcount.json').read())
+	partywincount = json.loads(open(f'{basedir2}partywincount.json').read())
+
 	gcs = [gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey1, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey2, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey3, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))]
 	gcn = 0
 	gc = gcs[gcn]
@@ -246,11 +248,11 @@ def calcandpost():
 	for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'All Ranks']: rankwinrates = rankwinrates.replace(r, f'{r}: {avgrankwinrates[r]}')
 	open(f'{basedir2}By Player Rank.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,Champion Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + rankwinrates)
 
-	open(f'{basedir2}By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: github.com/Aevann1/PaladinsRankedData - Data for patch: v{patch} - Contact me on discord: Aevann#6346\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+	open(f'{basedir2}Winrates By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: github.com/Aevann1/PaladinsRankedData - Data for patch: v{patch} - Contact me on discord: Aevann#6346\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
 	diawr = str(diawr*100).split('.')[0] + '%'
-	open(f'{basedir2}diamondplustalentWRs.csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+	open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	sheet = gc.open_by_key(googlesheetid)
 	for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card', 'By Item', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'Banrates', 'Average Damage,Healing,Shielding Per Second']:
@@ -364,6 +366,9 @@ while True:
 				bancount = json.loads(open(f'{basedir2}bancount.json').read().split(' - ')[1])
 				pickcount = json.loads(open(f'{basedir2}pickcount.json').read())
 				ratematchcount = int(open(f'{basedir2}bancount.json').read().split(' - ')[0])
+				partymatchcount = json.loads(open(f'{basedir2}partymatchcount.json').read())
+				partywincount = json.loads(open(f'{basedir2}partywincount.json').read())
+
 			else:
 				matchcount = {}
 				wincount = {}
@@ -384,9 +389,8 @@ while True:
 				bancount = {}
 				pickcount = {}
 				ratematchcount = 0
-			
-			partymatchcount = {}
-			partywincount = {}
+				partymatchcount = {}
+				partywincount = {}
 			t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
 			while True:
 				try: matches = str(requests.get(f'http://api.paladins.com/paladinsapi.svc/getmatchidsbyqueuejson/{devid}/' + hashlib.md5((f'{devid}getmatchidsbyqueue{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/{queue}/{day}/{hour}', timeout=10).content)
@@ -490,7 +494,7 @@ while True:
 						sps[champtalent] += player['Damage_Mitigated'] / player['Time_In_Match_Seconds']
 						avgmatchcount[champtalent] += 1
 						
-						if str(playernumber)[-1:] not in '6,0':
+						if str(playernumber)[-1:] not in '5,0':
 							friendlynumber = playernumber +1
 							teamlimit = friendlynumber + 4 - ((friendlynumber + 4) % 5)
 							while friendlynumber <= teamlimit:
@@ -596,28 +600,29 @@ while True:
 					continue
 				break
 
+			if not os.path.exists(basedir2): os.mkdir(basedir2)
+			open(f'{basedir2}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
+			open(f'{basedir2}wincount.json', 'w').write(json.dumps(wincount))
+			open(f'{basedir2}cardmatchcount.json', 'w').write(json.dumps(cardmatchcount))
+			open(f'{basedir2}cardwincount.json', 'w').write(json.dumps(cardwincount))
+			open(f'{basedir2}itemmatchcount.json', 'w').write(json.dumps(itemmatchcount))
+			open(f'{basedir2}itemwincount.json', 'w').write(json.dumps(itemwincount))
+			open(f'{basedir2}compmatchcount.json', 'w').write(json.dumps(compmatchcount))
+			open(f'{basedir2}compwincount.json', 'w').write(json.dumps(compwincount))
+			open(f'{basedir2}friendlymatchcount.json', 'w').write(json.dumps(friendlymatchcount))
+			open(f'{basedir2}friendlywincount.json', 'w').write(json.dumps(friendlywincount))
+			open(f'{basedir2}enemymatchcount.json', 'w').write(json.dumps(enemymatchcount))
+			open(f'{basedir2}enemywincount.json', 'w').write(json.dumps(enemywincount))
+			open(f'{basedir2}dps.json', 'w').write(json.dumps(dps))
+			open(f'{basedir2}hps.json', 'w').write(json.dumps(hps))
+			open(f'{basedir2}sps.json', 'w').write(json.dumps(sps))
+			open(f'{basedir2}avgmatchcount.json', 'w').write(json.dumps(avgmatchcount))
+			open(f'{basedir2}bancount.json', 'w').write(f'{ratematchcount} - ' +  json.dumps(bancount))
+			open(f'{basedir2}pickcount.json', 'w').write(json.dumps(pickcount))
+			open(f'{basedir2}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
+			open(f'{basedir2}partywincount.json', 'w').write(json.dumps(partywincount))
+			
 			if hour == '-1':
-				if not os.path.exists(basedir2): os.mkdir(basedir2)
-				open(f'{basedir2}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
-				open(f'{basedir2}wincount.json', 'w').write(json.dumps(wincount))
-				open(f'{basedir2}cardmatchcount.json', 'w').write(json.dumps(cardmatchcount))
-				open(f'{basedir2}cardwincount.json', 'w').write(json.dumps(cardwincount))
-				open(f'{basedir2}itemmatchcount.json', 'w').write(json.dumps(itemmatchcount))
-				open(f'{basedir2}itemwincount.json', 'w').write(json.dumps(itemwincount))
-				open(f'{basedir2}compmatchcount.json', 'w').write(json.dumps(compmatchcount))
-				open(f'{basedir2}compwincount.json', 'w').write(json.dumps(compwincount))
-				open(f'{basedir2}friendlymatchcount.json', 'w').write(json.dumps(friendlymatchcount))
-				open(f'{basedir2}friendlywincount.json', 'w').write(json.dumps(friendlywincount))
-				open(f'{basedir2}enemymatchcount.json', 'w').write(json.dumps(enemymatchcount))
-				open(f'{basedir2}enemywincount.json', 'w').write(json.dumps(enemywincount))
-				open(f'{basedir2}dps.json', 'w').write(json.dumps(dps))
-				open(f'{basedir2}hps.json', 'w').write(json.dumps(hps))
-				open(f'{basedir2}sps.json', 'w').write(json.dumps(sps))
-				open(f'{basedir2}avgmatchcount.json', 'w').write(json.dumps(avgmatchcount))
-				open(f'{basedir2}bancount.json', 'w').write(f'{ratematchcount} - ' +  json.dumps(bancount))
-				open(f'{basedir2}pickcount.json', 'w').write(json.dumps(pickcount))
-				open(f'{basedir2}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
-				open(f'{basedir2}partywincount.json', 'w').write(json.dumps(partywincount))
 				backupdir = f'{basedir1}/paladinsrankeddata backup/{patch} {queue}/'
 				if not os.path.exists(backupdir): os.mkdir(backupdir)
 				backupdir += f'{day} '
@@ -639,6 +644,8 @@ while True:
 				open(f'{backupdir}avgmatchcount.json', 'w').write(json.dumps(avgmatchcount))
 				open(f'{backupdir}bancount.json', 'w').write(str(ratematchcount) +  json.dumps(bancount))
 				open(f'{backupdir}pickcount.json', 'w').write(json.dumps(pickcount))
+				open(f'{backupdir}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
+				open(f'{backupdir}partywincount.json', 'w').write(json.dumps(partywincount))
 			calcandpost()
 			daydt += datetime.timedelta(days=1)
 	wakeuptime = datetime.datetime.now().replace(hour=3, minute=0)
