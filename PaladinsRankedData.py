@@ -37,11 +37,32 @@ def calcandpost():
 	ratematchcount = int(open(f'{basedir2}bancount.json').read().split(' - ')[0])
 	partymatchcount = json.loads(open(f'{basedir2}partymatchcount.json').read())
 	partywincount = json.loads(open(f'{basedir2}partywincount.json').read())
+	dpartymatchcount = json.loads(open(f'{basedir2}dpartymatchcount.json').read())
+	dpartywincount = json.loads(open(f'{basedir2}dpartywincount.json').read())
 
 	gcs = [gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey1, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey2, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey3, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))]
 	gcn = 0
 	gc = gcs[gcn]
 
+	dpartyWRs = []
+	for K, V in dpartymatchcount.items():
+		D = dpartywincount[K] / V
+		H = D*V
+		I = V-H
+		J = 2.5758293035489
+		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
+		D = str(D*100).split('.')[0] + '%'
+		if len(D) == 2: D = f'0{D}'
+		C1 = str(C1*100).split('.')[0] + '%'
+		if len(C1) == 2: C1 = f'0{C1}'
+		C2 = str(C2*100).split('.')[0] + '%'
+		if len(C2) == 2: C2 = f'0{C2}'
+		dpartyWRs.append((K, D, V, C1, C2))
+
+	dpartyWRs.sort(key=lambda x: x[0])
+	open(f'{basedir2}By Party Size (Diamond+).csv', 'w').write(f'Party Size,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dpartyWRs).replace('"' , "'").replace("'), (" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[2:-3])
+	
 	partyWRs = []
 	for K, V in partymatchcount.items():
 		D = partywincount[K] / V
@@ -58,7 +79,7 @@ def calcandpost():
 		if len(C2) == 2: C2 = f'0{C2}'
 		partyWRs.append((K, D, V, C1, C2))
 
-	partyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+	partyWRs.sort(key=lambda x: x[0])
 	open(f'{basedir2}By Party Size (Bronze to Platinum).csv', 'w').write(f'Party Size,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(partyWRs).replace('"' , "'").replace("'), (" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[2:-3])
 
 	avgdps = {}
@@ -255,7 +276,7 @@ def calcandpost():
 	open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average Diamond+ winrate for all champions and talents: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	sheet = gc.open_by_key(googlesheetid)
-	for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card', 'By Item', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'Banrates', 'Average Damage,Healing,Shielding Per Second']:
+	for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card', 'By Item', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average Damage,Healing,Shielding Per Second']:
 		while True:
 			try:
 				sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
@@ -346,51 +367,53 @@ while True:
 				googlesheetid = controllergooglesheetid
 				otherversion = f'Keyboard & Mouse version: docs.google.com/spreadsheets/d/{kbmgooglesheetid}'
 			basedir2 = f'{basedir1}/{patch} {queue}/'
-			if os.path.exists( f'{basedir2}matchcount.json'):
-				matchcount = json.loads(open( f'{basedir2}matchcount.json').read()[8:])
-				wincount = json.loads(open(f'{basedir2}wincount.json').read())
-				cardmatchcount = json.loads(open(f'{basedir2}cardmatchcount.json').read())
-				cardwincount = json.loads(open(f'{basedir2}cardwincount.json').read())
-				itemmatchcount = json.loads(open(f'{basedir2}itemmatchcount.json').read())
-				itemwincount = json.loads(open(f'{basedir2}itemwincount.json').read())
-				compmatchcount = json.loads(open(f'{basedir2}compmatchcount.json').read())
-				compwincount = json.loads(open(f'{basedir2}compwincount.json').read())
-				enemymatchcount = json.loads(open(f'{basedir2}enemymatchcount.json').read())
-				enemywincount = json.loads(open(f'{basedir2}enemywincount.json').read())
-				friendlymatchcount = json.loads(open(f'{basedir2}friendlymatchcount.json').read())
-				friendlywincount = json.loads(open(f'{basedir2}friendlywincount.json').read())
-				dps = json.loads(open(f'{basedir2}dps.json').read())
-				hps = json.loads(open(f'{basedir2}hps.json').read())
-				sps = json.loads(open(f'{basedir2}sps.json').read())
-				avgmatchcount = json.loads(open(f'{basedir2}avgmatchcount.json').read())
-				bancount = json.loads(open(f'{basedir2}bancount.json').read().split(' - ')[1])
-				pickcount = json.loads(open(f'{basedir2}pickcount.json').read())
-				ratematchcount = int(open(f'{basedir2}bancount.json').read().split(' - ')[0])
-				partymatchcount = json.loads(open(f'{basedir2}partymatchcount.json').read())
-				partywincount = json.loads(open(f'{basedir2}partywincount.json').read())
-
-			else:
-				matchcount = {}
-				wincount = {}
-				cardmatchcount = {}
-				cardwincount = {}
-				itemmatchcount = {}
-				itemwincount = {}
-				compmatchcount = {}
-				compwincount = {}
-				enemymatchcount = {}
-				enemywincount = {}
-				friendlymatchcount = {}
-				friendlywincount = {}
-				dps = {}
-				hps = {}
-				sps = {}
-				avgmatchcount = {}
-				bancount = {}
-				pickcount = {}
-				ratematchcount = 0
-				partymatchcount = {}
-				partywincount = {}
+			if os.path.exists( f'{basedir2}matchcount.json'): matchcount = json.loads(open( f'{basedir2}matchcount.json').read()[8:])
+			else: matchcount = {}
+			if os.path.exists( f'{basedir2}wincount.json'): wincount = json.loads(open(f'{basedir2}wincount.json').read())
+			else: wincount = {}
+			if os.path.exists( f'{basedir2}cardmatchcount.json'): cardmatchcount = json.loads(open(f'{basedir2}cardmatchcount.json').read())
+			else: cardmatchcount = {}
+			if os.path.exists( f'{basedir2}cardwincount.json'): cardwincount = json.loads(open(f'{basedir2}cardwincount.json').read())
+			else: cardwincount = {}
+			if os.path.exists( f'{basedir2}itemmatchcount.json'): itemmatchcount = json.loads(open(f'{basedir2}itemmatchcount.json').read())
+			else: itemmatchcount = {}
+			if os.path.exists( f'{basedir2}itemwincount.json'): itemwincount = json.loads(open(f'{basedir2}itemwincount.json').read())
+			else: itemwincount = {}
+			if os.path.exists( f'{basedir2}compmatchcount.json'): compmatchcount = json.loads(open(f'{basedir2}compmatchcount.json').read())
+			else: compmatchcount = {}
+			if os.path.exists( f'{basedir2}compwincount.json'): compwincount = json.loads(open(f'{basedir2}compwincount.json').read())
+			else: compwincount = {}
+			if os.path.exists( f'{basedir2}enemymatchcount.json'): enemymatchcount = json.loads(open(f'{basedir2}enemymatchcount.json').read())
+			else: enemymatchcount = {}
+			if os.path.exists( f'{basedir2}enemywincount.json'): enemywincount = json.loads(open(f'{basedir2}enemywincount.json').read())
+			else: enemywincount = {}
+			if os.path.exists( f'{basedir2}friendlymatchcount.json'): friendlymatchcount = json.loads(open(f'{basedir2}friendlymatchcount.json').read())
+			else: friendlymatchcount = {}
+			if os.path.exists( f'{basedir2}friendlywincount.json'): friendlywincount = json.loads(open(f'{basedir2}friendlywincount.json').read())
+			else: friendlywincount = {}
+			if os.path.exists( f'{basedir2}dps.json'): dps = json.loads(open(f'{basedir2}dps.json').read())
+			else: dps = {}
+			if os.path.exists( f'{basedir2}hps.json'): hps = json.loads(open(f'{basedir2}hps.json').read())
+			else: hps = {}
+			if os.path.exists( f'{basedir2}sps.json'): sps = json.loads(open(f'{basedir2}sps.json').read())
+			else: sps = {}
+			if os.path.exists( f'{basedir2}avgmatchcount.json'): avgmatchcount = json.loads(open(f'{basedir2}avgmatchcount.json').read())
+			else: avgmatchcount = {}
+			if os.path.exists( f'{basedir2}bancount.json'): bancount = json.loads(open(f'{basedir2}bancount.json').read().split(' - ')[1])
+			else: bancount = {}
+			if os.path.exists( f'{basedir2}pickcount.json'): pickcount = json.loads(open(f'{basedir2}pickcount.json').read())
+			else: pickcount = {}
+			if os.path.exists( f'{basedir2}ratematchcount.json'): ratematchcount = int(open(f'{basedir2}bancount.json').read().split(' - ')[0])
+			else: ratematchcount = 0
+			if os.path.exists( f'{basedir2}partymatchcount.json'): partymatchcount = json.loads(open(f'{basedir2}partymatchcount.json').read())
+			else: partymatchcount = {}
+			if os.path.exists( f'{basedir2}partywincount.json'): partywincount = json.loads(open(f'{basedir2}partywincount.json').read())
+			else: partywincount = {}
+			if os.path.exists( f'{basedir2}dpartymatchcount.json'): dpartymatchcount = json.loads(open(f'{basedir2}dpartymatchcount.json').read())
+			else: dpartymatchcount = {}
+			if os.path.exists( f'{basedir2}dpartywincount.json'): dpartywincount = json.loads(open(f'{basedir2}dpartywincount.json').read())
+			else: dpartywincount = {}
+			
 			t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
 			while True:
 				try: matches = str(requests.get(f'http://api.paladins.com/paladinsapi.svc/getmatchidsbyqueuejson/{devid}/' + hashlib.md5((f'{devid}getmatchidsbyqueue{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/{queue}/{day}/{hour}', timeout=10).content)
@@ -421,6 +444,7 @@ while True:
 					T = 0
 					playernumber = 0			
 					parties = {}
+					dparties = {}
 					li = list(mdata.split(',{"Account_Level'))
 					for player in li:
 						if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
@@ -437,14 +461,35 @@ while True:
 									partywincount[V[0]] = 0
 								partymatchcount[V[0]] += 1
 								if V[1] == 'Winner': partywincount[V[0]] += 1
+							for K, V in dparties.items():
+								if '1' not in dpartymatchcount:
+									dpartymatchcount['1'] = 0
+									dpartywincount['1'] = 0
+								dpartymatchcount['1'] += 1
+								if V == 'Winner': dpartywincount['1'] += 1
 							parties = {}
-							dmparties = ''
+							dparties = {}
 
 						party = player['PartyId']
 						rank = rankindex[player['League_Tier']]
 						if rank in 'Diamond,Master':
-							if party != 0: dmparties += '{party},'
-						elif f'{party}' not in dmparties:
+							if party in parties: del parties[party]
+							if party == 0:
+								if '1' not in dpartymatchcount:
+									dpartymatchcount['1'] = 0
+									dpartywincount['1'] = 0
+								dpartymatchcount['1'] += 1
+								if player['Win_Status'] == 'Winner': dpartywincount['1'] += 1
+							elif party in dparties:
+								if '2' not in dpartymatchcount:
+									dpartymatchcount['2'] = 0
+									dpartywincount['2'] = 0
+								dpartymatchcount['2'] += 1
+								if player['Win_Status'] == 'Winner': dpartywincount['2'] += 1
+								if party in dparties: del dparties[party]
+							else: dparties[party] = player['Win_Status']
+						
+						elif party not in dparties:
 							if party == 0:
 								if 1 not in partymatchcount:
 									partymatchcount[1] = 0
@@ -621,7 +666,9 @@ while True:
 			open(f'{basedir2}pickcount.json', 'w').write(json.dumps(pickcount))
 			open(f'{basedir2}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
 			open(f'{basedir2}partywincount.json', 'w').write(json.dumps(partywincount))
-			
+			open(f'{basedir2}dpartymatchcount.json', 'w').write(json.dumps(dpartymatchcount))
+			open(f'{basedir2}dpartywincount.json', 'w').write(json.dumps(dpartywincount))
+
 			if hour == '-1':
 				backupdir = f'{basedir1}/paladinsrankeddata backup/{patch} {queue}/'
 				if not os.path.exists(backupdir): os.mkdir(backupdir)
@@ -646,7 +693,10 @@ while True:
 				open(f'{backupdir}pickcount.json', 'w').write(json.dumps(pickcount))
 				open(f'{backupdir}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
 				open(f'{backupdir}partywincount.json', 'w').write(json.dumps(partywincount))
+				open(f'{backupdir}dpartymatchcount.json', 'w').write(json.dumps(dpartymatchcount))
+				open(f'{backupdir}dpartywincount.json', 'w').write(json.dumps(dpartywincount))
 			calcandpost()
+			sys.exit()
 			daydt += datetime.timedelta(days=1)
 	wakeuptime = datetime.datetime.now().replace(hour=3, minute=0)
 	if str(datetime.datetime.now().hour) not in '0,1,2': wakeuptime += datetime.timedelta(days=1)
