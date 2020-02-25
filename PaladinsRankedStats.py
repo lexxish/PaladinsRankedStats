@@ -556,7 +556,9 @@ while True:
 						party = player['PartyId']
 						rank = rankindex[player['League_Tier']]
 						if rank in 'Diamond,Master':
-							if party in parties: del parties[party]
+							if party in parties:
+								del parties[party]
+								continue
 							if party == 0:
 								if '1' not in dpartymatchcount:
 									dpartymatchcount['1'] = 0
@@ -571,7 +573,6 @@ while True:
 								if player['Win_Status'] == 'Winner': dpartywincount['2'] += 1
 								if party in dparties: del dparties[party]
 							else: dparties[party] = player['Win_Status']
-						
 						elif party not in dparties:
 							if party == 0:
 								if '1' not in partymatchcount:
@@ -612,7 +613,7 @@ while True:
 						
 						if player['Item_Purch_6'] == '': continue
 						champtalent = f'{champ},' + player['Item_Purch_6'].replace(',' , '').replace('\\', '')
-						if rank == 'Diamond' or rank == 'Master':
+						if rank in 'Diamond,Master':
 							if champtalent not in dhps:
 								ddps[champtalent] = 0
 								dhps[champtalent] = 0
@@ -672,7 +673,7 @@ while True:
 								enemymatchcount[enemyandchamp] += 1
 								if player['Win_Status'] == 'Winner': enemywincount[champandenemy] += 1
 						
-						if rank == 'Diamond' or rank == 'Master':
+						if rank in 'Diamond,Master':
 							cn = 0
 							for dcard in [player['Item_Purch_1'], player['Item_Purch_2'], player['Item_Purch_3'], player['Item_Purch_4'], player['Item_Purch_5']]:
 								cn += 1
@@ -737,7 +738,7 @@ while True:
 						matchcount[champskin] += 1
 						matchcount[rank] += 1
 						matchcount['All Ranks'] += 1
-						if rank == 'Diamond' or rank == 'Master':
+						if rank in 'Diamond,Master':
 							rankchamptalent = f'Diamond+,{champtalent}'
 							if rankchamptalent not in matchcount: matchcount[rankchamptalent] = 0
 							if rankchamptalent not in wincount: wincount[rankchamptalent] = 0
@@ -750,7 +751,7 @@ while True:
 							wincount[champskin] += 1
 							wincount[rank] += 1
 							wincount['All Ranks'] += 1
-							if rank == 'Diamond' or rank == 'Master': wincount[rankchamptalent] += 1
+							if rank in 'DiamondMaster': wincount[rankchamptalent] += 1
 					
 			while True:
 				try: print(str(requests.get(f'http://api.paladins.com/paladinsapi.svc/getdatausedjson/{devid}/' + hashlib.md5((f'{devid}getdataused{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}', timeout=10).content))
