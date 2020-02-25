@@ -11,394 +11,10 @@ basedir1 = os.path.dirname(os.path.realpath(__file__))
 sheetsapikey1 = f'{basedir1}/sheetsapikey1.json' #INSERT THE LOCATION OF YOUR FIRST GOOGLE SHEETS API KEY
 sheetsapikey2 = f'{basedir1}/sheetsapikey2.json' #INSERT THE LOCATION OF YOUR SECOND GOOGLE SHEETS API KEY
 sheetsapikey3 = f'{basedir1}/sheetsapikey3.json' #INSERT THE LOCATION OF YOUR THIRD GOOGLE SHEETS API KEY
-day = '20200120' #ENTER THE FIRST DAY YOU WANNA START COMPILING FROM IN YYYYMMDD FORMAT, MUST NOT BE LATER THAN 30 DAYS FROM TODAY
+firstday = '20200126' #ENTER THE FIRST DAY YOU WANNA START COMPILING FROM IN YYYYMMDD FORMAT, MUST NOT BE LATER THAN 30 DAYS FROM TODAY
 hour = '-1'
 rankindex = ['Qualifying', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Silver', 'Silver', 'Silver', 'Silver', 'Silver', 'Gold', 'Gold', 'Gold', 'Gold', 'Gold', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Master', 'Master', 'All Ranks']
-
-def calcandpost():
-	matchcount = json.loads(open(f'{basedir2}matchcount.json').read()[8:])
-	wincount = json.loads(open(f'{basedir2}wincount.json').read())
-	cardmatchcount = json.loads(open(f'{basedir2}cardmatchcount.json').read())
-	cardwincount = json.loads(open(f'{basedir2}cardwincount.json').read())
-	itemmatchcount = json.loads(open(f'{basedir2}itemmatchcount.json').read())
-	itemwincount = json.loads(open(f'{basedir2}itemwincount.json').read())
-	dcardmatchcount = json.loads(open(f'{basedir2}dcardmatchcount.json').read())
-	dcardwincount = json.loads(open(f'{basedir2}dcardwincount.json').read())
-	ditemmatchcount = json.loads(open(f'{basedir2}ditemmatchcount.json').read())
-	ditemwincount = json.loads(open(f'{basedir2}ditemwincount.json').read())
-	compmatchcount = json.loads(open(f'{basedir2}compmatchcount.json').read())
-	compwincount = json.loads(open(f'{basedir2}compwincount.json').read())
-	enemymatchcount = json.loads(open(f'{basedir2}enemymatchcount.json').read())
-	enemywincount = json.loads(open(f'{basedir2}enemywincount.json').read())
-	friendlymatchcount = json.loads(open(f'{basedir2}friendlymatchcount.json').read())
-	friendlywincount = json.loads(open(f'{basedir2}friendlywincount.json').read())
-	dps = json.loads(open(f'{basedir2}dps.json').read())
-	hps = json.loads(open(f'{basedir2}hps.json').read())
-	sps = json.loads(open(f'{basedir2}sps.json').read())
-	avgmatchcount = json.loads(open(f'{basedir2}avgmatchcount.json').read())
-	ddps = json.loads(open(f'{basedir2}ddps.json').read())
-	dhps = json.loads(open(f'{basedir2}dhps.json').read())
-	dsps = json.loads(open(f'{basedir2}dsps.json').read())
-	davgmatchcount = json.loads(open(f'{basedir2}davgmatchcount.json').read())
-	bancount = json.loads(open(f'{basedir2}bancount.json').read().split(' - ')[1])
-	pickcount = json.loads(open(f'{basedir2}pickcount.json').read())
-	ratematchcount = int(open(f'{basedir2}bancount.json').read().split(' - ')[0])
-	partymatchcount = json.loads(open(f'{basedir2}partymatchcount.json').read())
-	partywincount = json.loads(open(f'{basedir2}partywincount.json').read())
-	dpartymatchcount = json.loads(open(f'{basedir2}dpartymatchcount.json').read())
-	dpartywincount = json.loads(open(f'{basedir2}dpartywincount.json').read())
-
-	gcs = [gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey1, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey2, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey3, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))]
-	gcn = 0
-	gc = gcs[gcn]
-
-	dpartyWRs = []
-	for K, V in dpartymatchcount.items():
-		D = dpartywincount[K] / V
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		dpartyWRs.append((K, D, V, C1, C2))
-
-	dpartyWRs.sort(key=lambda x: x[0])
-	open(f'{basedir2}By Party Size (Diamond+).csv', 'w').write(f'Party Size,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dpartyWRs).replace('"' , "'").replace("'), (" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[2:-3])
-	
-	partyWRs = []
-	for K, V in partymatchcount.items():
-		D = partywincount[K] / V
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		partyWRs.append((K, D, V, C1, C2))
-
-	partyWRs.sort(key=lambda x: x[0])
-	open(f'{basedir2}By Party Size (Bronze to Platinum).csv', 'w').write(f'Party Size,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(partyWRs).replace('"' , "'").replace("'), (" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[2:-3])
-
-	avgdps = {}
-	for k, v in dps.items(): avgdps[k] = v/avgmatchcount[k]
-	avghps = {}
-	for k, v in hps.items(): avghps[k] = v/avgmatchcount[k]
-	avgs = []
-	for k, v in sps.items():
-		if k == 'Grohk,Maelstrom': cc = 'Damage'
-		elif k == 'Pip,Catalyst': cc =  'Flank'
-		elif k == 'Skye,Smoke and Dagger': cc =  'Support'
-		else: cc= cclass[k.split(",")[0]]
-		avgs.append((cc, k, avgdps[k], avghps[k], v/avgmatchcount[k], avgmatchcount[k]))
-	
-	avgs.sort(key=lambda x: (-x[2], -x[3], -x[4], -x[5]))
-	open(f'{basedir2}Average DPS,HPS,SPS (All Ranks).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(avgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
-	
-	davgdps = {}
-	for k, v in ddps.items(): davgdps[k] = v/davgmatchcount[k]
-	davghps = {}
-	for k, v in dhps.items(): davghps[k] = v/davgmatchcount[k]
-	davgs = []
-	for k, v in dsps.items():
-		if k == 'Grohk,Maelstrom': cc = 'Damage'
-		elif k == 'Pip,Catalyst': cc =  'Flank'
-		elif k == 'Skye,Smoke and Dagger': cc =  'Support'
-		else: cc= cclass[k.split(",")[0]]
-		davgs.append((cc, k, davgdps[k], davghps[k], v/davgmatchcount[k], davgmatchcount[k]))
-	
-	davgs.sort(key=lambda x: (-x[2], -x[3], -x[4], -x[5]))
-	open(f'{basedir2}Average DPS,HPS,SPS (Diamond+).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(davgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
-	
-	banrate = []
-	for k, v in bancount.items():
-		if k == 'null': continue
-		br = str(v/ratematchcount*100).split('.')[0] + '%'
-		if len(br) == 2: br = f'0{br}'
-		pr = str(pickcount[k]/(ratematchcount-v)*100).split('.')[0] + '%'
-		if len(pr) == 2: pr = f'0{pr}'
-		wr = str(wincount[f'{k},All Ranks'] / matchcount[f'{k},All Ranks']*100).split('.')[0] + '%'
-		banrate.append((k, br, pr, wr))
-	banrate.sort(key=lambda x: (x[1], x[2]), reverse=True)
-	open(f'{basedir2}Banrates.csv', 'w').write(f'Champion,Banrate,Pickrate when not banned,Winrate\n' + str(banrate).replace('"', "'").replace("'), ('" , '\n').replace("', '" , ",")[3:-3])
-
-	cardWRs = []
-	for K, V in cardmatchcount.items():
-		D = cardwincount[K] / V
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		cardWRs.append((K, D, V, C1, C2))
-	cardWRs.sort(key=lambda x:(x[0].split(',')[3], x[3], x[1], x[2]), reverse=True)
-	cardWRs.sort(key=lambda x: x[0].split(',')[:2])
-	open(f'{basedir2}By Card (All Ranks).csv', 'w').write(f'Champion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(cardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-
-	itemWRs = []
-	for K, V in itemmatchcount.items():
-		D = itemwincount[K] / V
-		champar = K.split(',')[0] + ',All Ranks'
-		ipr = V / matchcount[champar]
-		ipr = str(ipr*100).split('.')[0] + '%'
-		if len(ipr) == 2: ipr = f'0{ipr}'
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		itemWRs.append((K, D, ipr, V, C1, C2))
-
-	itemWRs.sort(key=lambda x:(x[4], x[1], x[3]), reverse=True)
-	itemWRs.sort(key=lambda x:(x[0].split(',')[0]))
-	open(f'{basedir2}By Item (All Ranks).csv', 'w').write(f'Champion,Item,Winrate,Pickrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(itemWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-
-	dcardWRs = []
-	for K, V in dcardmatchcount.items():
-		D = dcardwincount[K] / V
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		dcardWRs.append((K, D, V, C1, C2))
-	dcardWRs.sort(key=lambda x:(x[0].split(',')[3], x[3], x[1], x[2]), reverse=True)
-	dcardWRs.sort(key=lambda x: x[0].split(',')[:2])
-	diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
-	diawr = str(diawr*100).split('.')[0] + '%'
-	open(f'{basedir2}By Card (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dcardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-
-	ditemWRs = []
-	for K, V in ditemmatchcount.items():
-		if str(K)== '': continue
-		D = ditemwincount[K] / V
-		champd = K.split(',')[0] + ',Diamond'
-		champm = K.split(',')[0] + ',Master'
-		ipr = V / (matchcount[champd] + matchcount[champm])
-		ipr = str(ipr*100).split('.')[0] + '%'
-		if len(ipr) == 2: ipr = f'0{ipr}'
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		ditemWRs.append((K, D, ipr, V, C1, C2))
-
-	ditemWRs.sort(key=lambda x:(x[4], x[1], x[3]), reverse=True)
-	ditemWRs.sort(key=lambda x:(x[0].split(',')[0]))
-	open(f'{basedir2}By Item (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Item,Winrate,Pickrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(ditemWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-
-	compWRs = []
-	for K, V in compmatchcount.items():
-		D = compwincount[K] / V
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		compWRs.append((K, D, V, C1, C2))
-		
-	compWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
-	open(f'{basedir2}By Composition.csv', 'w').write(f'Composition,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(compWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-				
-	friendlyWRs = []
-	for K, V in friendlymatchcount.items():
-		D = friendlywincount[K] / V
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		friendlyWRs.append((K, D, V, C1, C2))
-
-	friendlyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
-	friendlyWRs.sort(key=lambda x:(x[0].split(',')[0]))
-	open(f'{basedir2}By Friendly Champion.csv', 'w').write(f'1st Champion,2nd Champion,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(friendlyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-	
-	enemyWRs = []
-	for K, V in enemymatchcount.items():
-		D = (V - enemywincount[K]) / V
-		H = D*V
-		I = V-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(D*100).split('.')[0] + '%'
-		if len(D) == 2: D = f'0{D}'
-		C1 = str(C1*100).split('.')[0] + '%'
-		if len(C1) == 2: C1 = f'0{C1}'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if len(C2) == 2: C2 = f'0{C2}'
-		enemyWRs.append((K, D, V, C1, C2))
-
-	enemyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
-	enemyWRs.sort(key=lambda x:(x[0].split(',')[0]))
-	open(f'{basedir2}By Enemy Champion.csv', 'w').write(f'1st Champion,2nd Champion,2nd Champion Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(enemyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-	
-	WRs = []
-	for i1, i2 in matchcount.items():
-		winrate = str(wincount[i1] / i2)[:4]
-		WRs.append((i1, float(winrate), i2))
-	talentwinrates = []
-	diamondpustalentwinrates = []
-	rankwinrates = []
-	mapwinrates = []
-	skinwinrates = []
-	avgrankwinrates = {}
-
-	for i in WRs:
-		D = i[1]
-		E = i[2]
-		H = D*E
-		I = E-H
-		J = 2.5758293035489
-		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
-		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
-		D = str(i[1]*100).split('.')[0] + '%'
-		C1 = str(C1*100).split('.')[0] + '%'
-		C2 = str(C2*100).split('.')[0] + '%'
-		if '#' in i[0]: skinwinrates.append((i[0].replace('#', ''), D, E, C1, C2))
-		elif 'Ranked' in i[0]: mapwinrates.append((cclass[i[0].split(',')[0]] + f',{i[0]}'.replace('Ranked ',''), D, E, C1, C2)) 
-		elif any(f',{r}' in i[0] for r in rankindex): rankwinrates.append((cclass[i[0].split(',')[0]] + f',{i[0]}', D, E, C1, C2))
-		elif any(r == i[0] for r in rankindex): avgrankwinrates[i[0]] = str(i[1]*100).split('.')[0] + '%'
-		elif i[0].startswith('Diamond+,'):
-			i0 = i[0].replace('Diamond+,', '')
-			if i0 == 'Grohk,Maelstrom': cc = 'Damage'
-			elif i0 == 'Pip,Catalyst': cc =  'Flank'
-			elif i0 == 'Skye,Smoke and Dagger': cc =  'Support'
-			else: cc= cclass[i0.split(",")[0]]
-			diamondpustalentwinrates.append((cc, i0, D, E, C1, C2))
-		else:
-			if i[0] == 'Grohk,Maelstrom': cc = 'Damage'
-			elif i[0] == 'Pip,Catalyst': cc =  'Flank'
-			elif i[0] == 'Skye,Smoke and Dagger': cc =  'Support'
-			else: cc= cclass[i[0].split(",")[0]]
-			talentwinrates.append((cc, i[0], D, E, C1, C2))
-
-	skinwinrates.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
-	skinwinrates.sort(key=lambda x: x[0].split(',')[0])
-	mapwinrates.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
-	mapwinrates.sort(key=lambda x: x[0].split(',')[0] + x[0].split(',')[1])
-	rankwinrates.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
-	rankwinrates.sort(key=lambda x: x[0].split(',')[0] + x[0].split(',')[1])
-	talentwinrates.sort(key=lambda x:(x[4], x[2], x[3]), reverse=True)
-	talentwinrates.sort(key=lambda x: x[0])
-	diamondpustalentwinrates.sort(key=lambda x:(x[4], x[2], x[3]), reverse=True)
-	diamondpustalentwinrates.sort(key=lambda x: x[0])
-
-	open(f'{basedir2}By Skin.csv', 'w').write(f'Champion,Skin,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(skinwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-
-	open(f'{basedir2}By Map.csv', 'w').write(f'Class,Champion,Map,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(mapwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-
-	rankwinrates = str(rankwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]
-	for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'All Ranks']: rankwinrates = rankwinrates.replace(r, f'{r}: {avgrankwinrates[r]}')
-	open(f'{basedir2}By Player Rank.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,Champion Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + rankwinrates)
-
-	open(f'{basedir2}Winrates By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: github.com/Aevann1/PaladinsRankedStats - Stats for patch: v{patch} - Contact me on discord: Aevann#6346\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-
-	open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
-
-	sheet = gc.open_by_key(googlesheetid)
-	for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card (All Ranks)', 'By Card (Diamond+)', 'By Item (All Ranks)', 'By Item (Diamond+)', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average DPS,HPS,SPS (All Ranks)', 'Average DPS,HPS,SPS (Diamond+)']:
-		while True:
-			try:
-				sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
-			except Exception as e:
-				if 'Quota exceeded for quota group' not in str(e): print(e)
-				gcn += 1
-				sheet = gcs[gcn].open_by_key(googlesheetid)
-				continue
-			break
-
-	sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
-	format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
-	n = 1
-	cnames = ''
-	for val in gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)').col_values(2):
-		while True:
-			try:
-				if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
-				if val not in cnames:
-					format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
-					cnames += f'{val},'
-			except Exception as e:
-				if 'Quota exceeded for quota group' not in str(e):
-					print(e)
-					sys.exit()
-				gcn += 1
-				gc = gcs[gcn]
-				sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
-				continue
-			n += 1
-			break
-
-	sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
-	format_cell_range(sheet, f'B3:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
-	n = 1
-	cnames = ''
-	for val in gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)').col_values(2):
-		while True:
-			try:
-				if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
-				if val not in cnames:
-					format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
-					cnames += f'{val},'
-			except Exception as e:			
-				if 'Quota exceeded for quota group' not in str(e):
-					print(e)
-					sys.exit()
-				gcn += 1
-				gc = gcs[gcn]
-				sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
-				continue
-			n += 1
-			break
+itemindex = ['Illuminate','Resilience','Blast Shields','Haven','Master Riding','Morale Boost','Nimble','Chronos','Kill to Heal','Life Rip','Rejuvenate','Veteran','Bulldozer','Deft Hands','Cauterize','Wrecker']
 
 while True:
 	t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
@@ -419,11 +35,10 @@ while True:
 	date = date.date()
 	for queue in ['486', '428']:
 		print(queue)
-		run = 0
 		if os.path.exists( f'{basedir1}/{patch} {queue}/matchcount.json'): day = open(f'{basedir1}/{patch} {queue}/matchcount.json').read()[:8]
+		else: day = firstday
 		daydt = datetime.datetime(int(day[:4]), int(day[4] + day[5]), int(day[-2:])).date() + datetime.timedelta(days=1)
 		while daydt <= date:
-			run = 1
 			day = str(daydt).replace('-', '')
 			print(day)
 			if queue == '486':
@@ -453,6 +68,14 @@ while True:
 			else: ditemmatchcount = {}
 			if os.path.exists( f'{basedir2}ditemwincount.json'): ditemwincount = json.loads(open(f'{basedir2}ditemwincount.json').read())
 			else: ditemwincount = {}
+			if os.path.exists( f'{basedir2}noitemmatchcount.json'): noitemmatchcount = json.loads(open(f'{basedir2}noitemmatchcount.json').read())
+			else: noitemmatchcount = {}
+			if os.path.exists( f'{basedir2}noitemwincount.json'): noitemwincount = json.loads(open(f'{basedir2}noitemwincount.json').read())
+			else: noitemwincount = {}
+			if os.path.exists( f'{basedir2}dnoitemmatchcount.json'): dnoitemmatchcount = json.loads(open(f'{basedir2}dnoitemmatchcount.json').read())
+			else: dnoitemmatchcount = {}
+			if os.path.exists( f'{basedir2}dnoitemwincount.json'): dnoitemwincount = json.loads(open(f'{basedir2}dnoitemwincount.json').read())
+			else: dnoitemwincount = {}
 			if os.path.exists( f'{basedir2}compmatchcount.json'): compmatchcount = json.loads(open(f'{basedir2}compmatchcount.json').read())
 			else: compmatchcount = {}
 			if os.path.exists( f'{basedir2}compwincount.json'): compwincount = json.loads(open(f'{basedir2}compwincount.json').read())
@@ -481,12 +104,12 @@ while True:
 			else: dsps = {}
 			if os.path.exists( f'{basedir2}davgmatchcount.json'): davgmatchcount = json.loads(open(f'{basedir2}davgmatchcount.json').read())
 			else: davgmatchcount = {}
-			if os.path.exists( f'{basedir2}bancount.json'): bancount = json.loads(open(f'{basedir2}bancount.json').read().split(' - ')[1])
-			else: bancount = {}
-			if os.path.exists( f'{basedir2}pickcount.json'): pickcount = json.loads(open(f'{basedir2}pickcount.json').read())
-			else: pickcount = {}
-			if os.path.exists( f'{basedir2}ratematchcount.json'): ratematchcount = int(open(f'{basedir2}bancount.json').read().split(' - ')[0])
-			else: ratematchcount = 0
+			if os.path.exists( f'{basedir2}bancount.json'):
+				ratematchcount = int(open(f'{basedir2}bancount.json').read().split(' - ')[0])
+				bancount = json.loads(open(f'{basedir2}bancount.json').read().split(' - ')[1])
+			else:
+				ratematchcount = 0
+				bancount = {}
 			if os.path.exists( f'{basedir2}partymatchcount.json'): partymatchcount = json.loads(open(f'{basedir2}partymatchcount.json').read())
 			else: partymatchcount = {}
 			if os.path.exists( f'{basedir2}partywincount.json'): partywincount = json.loads(open(f'{basedir2}partywincount.json').read())
@@ -532,8 +155,6 @@ while True:
 						if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
 						player = json.loads(player)
 						champ = player['Reference_Name'].replace('\\', '')
-						if champ not in pickcount: pickcount[champ] = 0
-						pickcount[champ] += 1
 						if len(li) != 100: continue
 
 						if str(playernumber)[-1:] == '0':
@@ -573,7 +194,8 @@ while True:
 								if player['Win_Status'] == 'Winner': dpartywincount['2'] += 1
 								if party in dparties: del dparties[party]
 							else: dparties[party] = player['Win_Status']
-						elif party not in dparties:
+						elif party in dparties: del dparties[party]
+						else:
 							if party == 0:
 								if '1' not in partymatchcount:
 									partymatchcount['1'] = 0
@@ -585,6 +207,7 @@ while True:
 						
 						if str(playernumber)[-1:] == '0':
 							for ban in ['Ban_1', 'Ban_2', 'Ban_3', 'Ban_4']:
+								if str(ban) == 'null' or ban == None: continue
 								ban = player[ban]
 								if ban not in bancount: bancount[ban] = 0
 								bancount[ban] += 1
@@ -673,6 +296,7 @@ while True:
 								enemymatchcount[enemyandchamp] += 1
 								if player['Win_Status'] == 'Winner': enemywincount[champandenemy] += 1
 						
+						items = [player['Item_Active_1'], player['Item_Active_2'], player['Item_Active_3'], player['Item_Active_4']]
 						if rank in 'Diamond,Master':
 							cn = 0
 							for dcard in [player['Item_Purch_1'], player['Item_Purch_2'], player['Item_Purch_3'], player['Item_Purch_4'], player['Item_Purch_5']]:
@@ -684,15 +308,22 @@ while True:
 								dcardmatchcount[ctcl] += 1
 								if player['Win_Status'] == 'Winner': dcardwincount[ctcl] += 1
 							
-							for ditem in [player['Item_Active_1'], player['Item_Active_2'], player['Item_Active_3'], player['Item_Active_4']]:
-								if ditem == '': break
-								ditem = f'{champ},{ditem}'
-								if ditem not in ditemmatchcount:
-									ditemmatchcount[ditem] = 0
-									ditemwincount[ditem] = 0
-								ditemmatchcount[ditem] += 1
-								if player['Win_Status'] == 'Winner': ditemwincount[ditem] += 1
-							
+							for item in items:
+								if item == '': break
+								item = f'{champ},{item}'
+								if item not in ditemmatchcount:
+									ditemmatchcount[item] = 0
+									ditemwincount[item] = 0
+								ditemmatchcount[item] += 1
+								if player['Win_Status'] == 'Winner': ditemwincount[item] += 1
+							for item in set(itemindex) - set(items):
+								item = f'{champ},{item}'
+								if item not in dnoitemmatchcount:
+									dnoitemmatchcount[item] = 0
+									dnoitemwincount[item] = 0
+								dnoitemmatchcount[item] += 1
+								if player['Win_Status'] == 'Winner': dnoitemwincount[item] += 1
+
 						cn = 0
 						for card in [player['Item_Purch_1'], player['Item_Purch_2'], player['Item_Purch_3'], player['Item_Purch_4'], player['Item_Purch_5']]:
 							cn += 1
@@ -703,7 +334,7 @@ while True:
 							cardmatchcount[ctcl] += 1
 							if player['Win_Status'] == 'Winner': cardwincount[ctcl] += 1
 						
-						for item in [player['Item_Active_1'], player['Item_Active_2'], player['Item_Active_3'], player['Item_Active_4']]:
+						for item in items:
 							if item == '': break
 							item = f'{champ},{item}'
 							if item not in itemmatchcount:
@@ -711,6 +342,13 @@ while True:
 								itemwincount[item] = 0
 							itemmatchcount[item] += 1
 							if player['Win_Status'] == 'Winner': itemwincount[item] += 1
+						for item in set(itemindex) - set(items):
+							item = f'{champ},{item}'
+							if item not in noitemmatchcount:
+								noitemmatchcount[item] = 0
+								noitemwincount[item] = 0
+							noitemmatchcount[item] += 1
+							if player['Win_Status'] == 'Winner': noitemwincount[item] += 1
 
 						champrank = f"{champ},{rankindex[player['League_Tier']]}"
 						champallranks = f'{champ},All Ranks'
@@ -760,39 +398,41 @@ while True:
 					continue
 				break
 
-			if not os.path.exists(basedir2): os.mkdir(basedir2)
-			open(f'{basedir2}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
-			open(f'{basedir2}wincount.json', 'w').write(json.dumps(wincount))
-			open(f'{basedir2}cardmatchcount.json', 'w').write(json.dumps(cardmatchcount))
-			open(f'{basedir2}cardwincount.json', 'w').write(json.dumps(cardwincount))
-			open(f'{basedir2}itemmatchcount.json', 'w').write(json.dumps(itemmatchcount))
-			open(f'{basedir2}itemwincount.json', 'w').write(json.dumps(itemwincount))
-			open(f'{basedir2}dcardmatchcount.json', 'w').write(json.dumps(dcardmatchcount))
-			open(f'{basedir2}dcardwincount.json', 'w').write(json.dumps(dcardwincount))
-			open(f'{basedir2}ditemmatchcount.json', 'w').write(json.dumps(ditemmatchcount))
-			open(f'{basedir2}ditemwincount.json', 'w').write(json.dumps(ditemwincount))
-			open(f'{basedir2}compmatchcount.json', 'w').write(json.dumps(compmatchcount))
-			open(f'{basedir2}compwincount.json', 'w').write(json.dumps(compwincount))
-			open(f'{basedir2}friendlymatchcount.json', 'w').write(json.dumps(friendlymatchcount))
-			open(f'{basedir2}friendlywincount.json', 'w').write(json.dumps(friendlywincount))
-			open(f'{basedir2}enemymatchcount.json', 'w').write(json.dumps(enemymatchcount))
-			open(f'{basedir2}enemywincount.json', 'w').write(json.dumps(enemywincount))
-			open(f'{basedir2}dps.json', 'w').write(json.dumps(dps))
-			open(f'{basedir2}hps.json', 'w').write(json.dumps(hps))
-			open(f'{basedir2}sps.json', 'w').write(json.dumps(sps))
-			open(f'{basedir2}avgmatchcount.json', 'w').write(json.dumps(avgmatchcount))
-			open(f'{basedir2}ddps.json', 'w').write(json.dumps(ddps))
-			open(f'{basedir2}dhps.json', 'w').write(json.dumps(dhps))
-			open(f'{basedir2}dsps.json', 'w').write(json.dumps(dsps))
-			open(f'{basedir2}davgmatchcount.json', 'w').write(json.dumps(davgmatchcount))
-			open(f'{basedir2}bancount.json', 'w').write(f'{ratematchcount} - ' +  json.dumps(bancount))
-			open(f'{basedir2}pickcount.json', 'w').write(json.dumps(pickcount))
-			open(f'{basedir2}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
-			open(f'{basedir2}partywincount.json', 'w').write(json.dumps(partywincount))
-			open(f'{basedir2}dpartymatchcount.json', 'w').write(json.dumps(dpartymatchcount))
-			open(f'{basedir2}dpartywincount.json', 'w').write(json.dumps(dpartywincount))
-
 			if hour == '-1':
+				if not os.path.exists(basedir2): os.mkdir(basedir2)
+				open(f'{basedir2}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
+				open(f'{basedir2}wincount.json', 'w').write(json.dumps(wincount))
+				open(f'{basedir2}cardmatchcount.json', 'w').write(json.dumps(cardmatchcount))
+				open(f'{basedir2}cardwincount.json', 'w').write(json.dumps(cardwincount))
+				open(f'{basedir2}itemmatchcount.json', 'w').write(json.dumps(itemmatchcount))
+				open(f'{basedir2}itemwincount.json', 'w').write(json.dumps(itemwincount))
+				open(f'{basedir2}dcardmatchcount.json', 'w').write(json.dumps(dcardmatchcount))
+				open(f'{basedir2}dcardwincount.json', 'w').write(json.dumps(dcardwincount))
+				open(f'{basedir2}ditemmatchcount.json', 'w').write(json.dumps(ditemmatchcount))
+				open(f'{basedir2}ditemwincount.json', 'w').write(json.dumps(ditemwincount))
+				open(f'{basedir2}noitemmatchcount.json', 'w').write(json.dumps(noitemmatchcount))
+				open(f'{basedir2}noitemwincount.json', 'w').write(json.dumps(noitemwincount))
+				open(f'{basedir2}dnoitemmatchcount.json', 'w').write(json.dumps(dnoitemmatchcount))
+				open(f'{basedir2}dnoitemwincount.json', 'w').write(json.dumps(dnoitemwincount))
+				open(f'{basedir2}compmatchcount.json', 'w').write(json.dumps(compmatchcount))
+				open(f'{basedir2}compwincount.json', 'w').write(json.dumps(compwincount))
+				open(f'{basedir2}friendlymatchcount.json', 'w').write(json.dumps(friendlymatchcount))
+				open(f'{basedir2}friendlywincount.json', 'w').write(json.dumps(friendlywincount))
+				open(f'{basedir2}enemymatchcount.json', 'w').write(json.dumps(enemymatchcount))
+				open(f'{basedir2}enemywincount.json', 'w').write(json.dumps(enemywincount))
+				open(f'{basedir2}dps.json', 'w').write(json.dumps(dps))
+				open(f'{basedir2}hps.json', 'w').write(json.dumps(hps))
+				open(f'{basedir2}sps.json', 'w').write(json.dumps(sps))
+				open(f'{basedir2}avgmatchcount.json', 'w').write(json.dumps(avgmatchcount))
+				open(f'{basedir2}ddps.json', 'w').write(json.dumps(ddps))
+				open(f'{basedir2}dhps.json', 'w').write(json.dumps(dhps))
+				open(f'{basedir2}dsps.json', 'w').write(json.dumps(dsps))
+				open(f'{basedir2}davgmatchcount.json', 'w').write(json.dumps(davgmatchcount))
+				open(f'{basedir2}bancount.json', 'w').write(f'{ratematchcount} - ' +  json.dumps(bancount))
+				open(f'{basedir2}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
+				open(f'{basedir2}partywincount.json', 'w').write(json.dumps(partywincount))
+				open(f'{basedir2}dpartymatchcount.json', 'w').write(json.dumps(dpartymatchcount))
+				open(f'{basedir2}dpartywincount.json', 'w').write(json.dumps(dpartywincount))
 				backupdir = f'{basedir1}/PaladinsRankedStats backup/{patch} {queue}/'
 				if not os.path.exists(backupdir): os.mkdir(backupdir)
 				backupdir += f'{day} '
@@ -806,6 +446,10 @@ while True:
 				open(f'{backupdir}dcardwincount.json', 'w').write(json.dumps(dcardwincount))
 				open(f'{backupdir}ditemmatchcount.json', 'w').write(json.dumps(ditemmatchcount))
 				open(f'{backupdir}ditemwincount.json', 'w').write(json.dumps(ditemwincount))
+				open(f'{backupdir}noitemmatchcount.json', 'w').write(json.dumps(noitemmatchcount))
+				open(f'{backupdir}noitemwincount.json', 'w').write(json.dumps(noitemwincount))
+				open(f'{backupdir}dnoitemmatchcount.json', 'w').write(json.dumps(dnoitemmatchcount))
+				open(f'{backupdir}dnoitemwincount.json', 'w').write(json.dumps(dnoitemwincount))
 				open(f'{backupdir}compmatchcount.json', 'w').write(json.dumps(compmatchcount))
 				open(f'{backupdir}compwincount.json', 'w').write(json.dumps(compwincount))
 				open(f'{backupdir}friendlymatchcount.json', 'w').write(json.dumps(friendlymatchcount))
@@ -821,12 +465,340 @@ while True:
 				open(f'{backupdir}dsps.json', 'w').write(json.dumps(dsps))
 				open(f'{backupdir}davgmatchcount.json', 'w').write(json.dumps(davgmatchcount))
 				open(f'{backupdir}bancount.json', 'w').write(str(ratematchcount) +  json.dumps(bancount))
-				open(f'{backupdir}pickcount.json', 'w').write(json.dumps(pickcount))
 				open(f'{backupdir}partymatchcount.json', 'w').write(json.dumps(partymatchcount))
 				open(f'{backupdir}partywincount.json', 'w').write(json.dumps(partywincount))
 				open(f'{backupdir}dpartymatchcount.json', 'w').write(json.dumps(dpartymatchcount))
 				open(f'{backupdir}dpartywincount.json', 'w').write(json.dumps(dpartywincount))
-			calcandpost()
+			gcs = [gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey1, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey2, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey3, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))]
+			gcn = 0
+			gc = gcs[gcn]
+
+			dpartyWRs = []
+			for K, V in dpartymatchcount.items():
+				D = dpartywincount[K] / V
+				H = D*V
+				I = V-H
+				J = 2.5758293035489
+				C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+				C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				C1 = str(C1*100).split('.')[0] + '%'
+				if len(C1) == 2: C1 = f'0{C1}'
+				C2 = str(C2*100).split('.')[0] + '%'
+				if len(C2) == 2: C2 = f'0{C2}'
+				dpartyWRs.append((K, D, V, C1, C2))
+
+			dpartyWRs.sort(key=lambda x: x[0])
+			open(f'{basedir2}By Party Size (Diamond+).csv', 'w').write(f'Party Size,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dpartyWRs).replace('"' , "'").replace("'), (" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[2:-3])
+
+			partyWRs = []
+			for K, V in partymatchcount.items():
+				D = partywincount[K] / V
+				H = D*V
+				I = V-H
+				J = 2.5758293035489
+				C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+				C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				C1 = str(C1*100).split('.')[0] + '%'
+				if len(C1) == 2: C1 = f'0{C1}'
+				C2 = str(C2*100).split('.')[0] + '%'
+				if len(C2) == 2: C2 = f'0{C2}'
+				partyWRs.append((K, D, V, C1, C2))
+
+			partyWRs.sort(key=lambda x: x[0])
+			open(f'{basedir2}By Party Size (Bronze to Platinum).csv', 'w').write(f'Party Size,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(partyWRs).replace('"' , "'").replace("'), (" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[2:-3])
+
+			avgdps = {}
+			for k, v in dps.items(): avgdps[k] = v/avgmatchcount[k]
+			avghps = {}
+			for k, v in hps.items(): avghps[k] = v/avgmatchcount[k]
+			avgs = []
+			for k, v in sps.items():
+				if k == 'Grohk,Maelstrom': cc = 'Damage'
+				elif k == 'Pip,Catalyst': cc =  'Flank'
+				elif k == 'Skye,Smoke and Dagger': cc =  'Support'
+				else: cc= cclass[k.split(",")[0]]
+				avgs.append((cc, k, avgdps[k], avghps[k], v/avgmatchcount[k], avgmatchcount[k]))
+
+			avgs.sort(key=lambda x: (-x[2], -x[3], -x[4], -x[5]))
+			open(f'{basedir2}Average DPS,HPS,SPS (All Ranks).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(avgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
+
+			davgdps = {}
+			for k, v in ddps.items(): davgdps[k] = v/davgmatchcount[k]
+			davghps = {}
+			for k, v in dhps.items(): davghps[k] = v/davgmatchcount[k]
+			davgs = []
+			for k, v in dsps.items():
+				if k == 'Grohk,Maelstrom': cc = 'Damage'
+				elif k == 'Pip,Catalyst': cc =  'Flank'
+				elif k == 'Skye,Smoke and Dagger': cc =  'Support'
+				else: cc= cclass[k.split(",")[0]]
+				davgs.append((cc, k, davgdps[k], davghps[k], v/davgmatchcount[k], davgmatchcount[k]))
+
+			davgs.sort(key=lambda x: (-x[2], -x[3], -x[4], -x[5]))
+			open(f'{basedir2}Average DPS,HPS,SPS (Diamond+).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(davgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
+
+			banrate = []
+			for k, v in bancount.items():
+				if str(k) == 'null' or k == None: continue
+				br = str(v/ratematchcount*100).split('.')[0] + '%'
+				if len(br) == 2: br = f'0{br}'
+				pr = str(matchcount[f'{k},All Ranks'] / (ratematchcount-v)*100).split('.')[0] + '%'
+				if len(pr) == 2: pr = f'0{pr}'
+				wr = str(wincount[f'{k},All Ranks'] / matchcount[f'{k},All Ranks']*100).split('.')[0] + '%'
+				banrate.append((k, br, pr, wr))
+			banrate.sort(key=lambda x: (x[1], x[2]), reverse=True)
+			open(f'{basedir2}Banrates.csv', 'w').write(f'Champion,Banrate,Pickrate when not banned,Winrate\n' + str(banrate).replace('"', "'").replace("'), ('" , '\n').replace("', '" , ",")[3:-3])
+
+			itemWRs = []
+			for K, V in itemmatchcount.items():
+				D = itemwincount[K] / V
+				champar = K.split(',')[0] + ',All Ranks'
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				noitemwr = noitemwincount[K] / noitemmatchcount[K]
+				noitemwr = str(noitemwr*100).split('.')[0] + '%'
+				itemWRs.append((K, noitemwr, D, V, noitemmatchcount[K]))
+			itemWRs.sort(key=lambda x: (x[1], x[2]), reverse=True)
+			itemWRs.sort(key=lambda x: x[0].split(',')[0])
+			open(f'{basedir2}By Item (All Ranks).csv', 'w').write(f'Champion,Item,Winrate without Item,Winrate with Item,Match Count with Item,Match Count without Item\n' + str(itemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
+			
+			diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
+			diawr = str(diawr*100).split('.')[0] + '%'
+
+			ditemWRs = []
+			for K, V in ditemmatchcount.items():
+				if str(K)== '': continue
+				D = ditemwincount[K] / V
+				champd = K.split(',')[0] + ',Diamond'
+				champm = K.split(',')[0] + ',Master'
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				noitemwr = dnoitemwincount[K] / dnoitemmatchcount[K]
+				noitemwr = str(noitemwr*100).split('.')[0] + '%'
+				ditemWRs.append((K, noitemwr, D, V, dnoitemmatchcount[K]))
+			ditemWRs.sort(key=lambda x: (x[1], x[2]), reverse=True)
+			ditemWRs.sort(key=lambda x: x[0].split(',')[0])
+			open(f'{basedir2}By Item (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Item,Winrate without Item,Winrate with Item,Match Count with Item, Match Count without Item\n' + str(ditemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
+			
+			cardWRs = []
+			for K, V in cardmatchcount.items():
+				D = cardwincount[K] / V
+				H = D*V
+				I = V-H
+				J = 2.5758293035489
+				C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+				C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				C1 = str(C1*100).split('.')[0] + '%'
+				if len(C1) == 2: C1 = f'0{C1}'
+				C2 = str(C2*100).split('.')[0] + '%'
+				if len(C2) == 2: C2 = f'0{C2}'
+				cardWRs.append((K, D, V, C1, C2))
+			cardWRs.sort(key=lambda x:(x[0].split(',')[3], x[3], x[1], x[2]), reverse=True)
+			cardWRs.sort(key=lambda x: x[0].split(',')[:2])
+			open(f'{basedir2}By Card (All Ranks).csv', 'w').write(f'Champion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(cardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+
+			dcardWRs = []
+			for K, V in dcardmatchcount.items():
+				D = dcardwincount[K] / V
+				H = D*V
+				I = V-H
+				J = 2.5758293035489
+				C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+				C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				C1 = str(C1*100).split('.')[0] + '%'
+				if len(C1) == 2: C1 = f'0{C1}'
+				C2 = str(C2*100).split('.')[0] + '%'
+				if len(C2) == 2: C2 = f'0{C2}'
+				dcardWRs.append((K, D, V, C1, C2))
+			dcardWRs.sort(key=lambda x:(x[0].split(',')[3], x[3], x[1], x[2]), reverse=True)
+			dcardWRs.sort(key=lambda x: x[0].split(',')[:2])
+			open(f'{basedir2}By Card (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dcardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+
+			compWRs = []
+			for K, V in compmatchcount.items():
+				D = compwincount[K] / V
+				H = D*V
+				I = V-H
+				J = 2.5758293035489
+				C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+				C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				C1 = str(C1*100).split('.')[0] + '%'
+				if len(C1) == 2: C1 = f'0{C1}'
+				C2 = str(C2*100).split('.')[0] + '%'
+				if len(C2) == 2: C2 = f'0{C2}'
+				compWRs.append((K, D, V, C1, C2))
+				
+			compWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+			open(f'{basedir2}By Composition.csv', 'w').write(f'Composition,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(compWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+						
+			friendlyWRs = []
+			for K, V in friendlymatchcount.items():
+				D = friendlywincount[K] / V
+				H = D*V
+				I = V-H
+				J = 2.5758293035489
+				C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+				C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				C1 = str(C1*100).split('.')[0] + '%'
+				if len(C1) == 2: C1 = f'0{C1}'
+				C2 = str(C2*100).split('.')[0] + '%'
+				if len(C2) == 2: C2 = f'0{C2}'
+				friendlyWRs.append((K, D, V, C1, C2))
+
+			friendlyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+			friendlyWRs.sort(key=lambda x:(x[0].split(',')[0]))
+			open(f'{basedir2}By Friendly Champion.csv', 'w').write(f'1st Champion,2nd Champion,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(friendlyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+
+			enemyWRs = []
+			for K, V in enemymatchcount.items():
+				D = (V - enemywincount[K]) / V
+				H = D*V
+				I = V-H
+				J = 2.5758293035489
+				C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+				C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
+				D = str(D*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
+				C1 = str(C1*100).split('.')[0] + '%'
+				if len(C1) == 2: C1 = f'0{C1}'
+				C2 = str(C2*100).split('.')[0] + '%'
+				if len(C2) == 2: C2 = f'0{C2}'
+				enemyWRs.append((K, D, V, C1, C2))
+
+			enemyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+			enemyWRs.sort(key=lambda x:(x[0].split(',')[0]))
+			open(f'{basedir2}By Enemy Champion.csv', 'w').write(f'1st Champion,2nd Champion,2nd Champion Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(enemyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+
+			WRs = []
+			for i1, i2 in matchcount.items():
+				winrate = str(wincount[i1] / i2)[:4]
+				WRs.append((i1, float(winrate), i2))
+			talentwinrates = []
+			diamondpustalentwinrates = []
+			rankwinrates = []
+			mapwinrates = []
+			skinwinrates = []
+			avgrankwinrates = {}
+
+			for i in WRs:
+				D = i[1]
+				E = i[2]
+				H = D*E
+				I = E-H
+				J = 2.5758293035489
+				C1 = max(D-J/(E+J**2)*math.sqrt(H*I/E+J**2/4),0)
+				C2 = min(D+J/(E+J**2)*math.sqrt(H*I/E+J**2/4),1)
+				D = str(i[1]*100).split('.')[0] + '%'
+				C1 = str(C1*100).split('.')[0] + '%'
+				C2 = str(C2*100).split('.')[0] + '%'
+				if '#' in i[0]: skinwinrates.append((i[0].replace('#', ''), D, E, C1, C2))
+				elif 'Ranked' in i[0]: mapwinrates.append((cclass[i[0].split(',')[0]] + f',{i[0]}'.replace('Ranked ',''), D, E, C1, C2)) 
+				elif any(f',{r}' in i[0] for r in rankindex): rankwinrates.append((cclass[i[0].split(',')[0]] + f',{i[0]}', D, E, C1, C2))
+				elif any(r == i[0] for r in rankindex): avgrankwinrates[i[0]] = str(i[1]*100).split('.')[0] + '%'
+				elif i[0].startswith('Diamond+,'):
+					i0 = i[0].replace('Diamond+,', '')
+					if i0 == 'Grohk,Maelstrom': cc = 'Damage'
+					elif i0 == 'Pip,Catalyst': cc =  'Flank'
+					elif i0 == 'Skye,Smoke and Dagger': cc =  'Support'
+					else: cc= cclass[i0.split(",")[0]]
+					diamondpustalentwinrates.append((cc, i0, D, E, C1, C2))
+				else:
+					if i[0] == 'Grohk,Maelstrom': cc = 'Damage'
+					elif i[0] == 'Pip,Catalyst': cc =  'Flank'
+					elif i[0] == 'Skye,Smoke and Dagger': cc =  'Support'
+					else: cc= cclass[i[0].split(",")[0]]
+					talentwinrates.append((cc, i[0], D, E, C1, C2))
+
+			skinwinrates.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+			skinwinrates.sort(key=lambda x: x[0].split(',')[0])
+			mapwinrates.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+			mapwinrates.sort(key=lambda x: x[0].split(',')[0] + x[0].split(',')[1])
+			rankwinrates.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+			rankwinrates.sort(key=lambda x: x[0].split(',')[0] + x[0].split(',')[1])
+			talentwinrates.sort(key=lambda x:(x[4], x[2], x[3]), reverse=True)
+			talentwinrates.sort(key=lambda x: x[0])
+			diamondpustalentwinrates.sort(key=lambda x:(x[4], x[2], x[3]), reverse=True)
+			diamondpustalentwinrates.sort(key=lambda x: x[0])
+
+			open(f'{basedir2}By Skin.csv', 'w').write(f'Champion,Skin,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(skinwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+
+			open(f'{basedir2}By Map.csv', 'w').write(f'Class,Champion,Map,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(mapwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+
+			rankwinrates = str(rankwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]
+			for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'All Ranks']: rankwinrates = rankwinrates.replace(r, f'{r}: {avgrankwinrates[r]}')
+			open(f'{basedir2}By Player Rank.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,Champion Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + rankwinrates)
+
+			open(f'{basedir2}Winrates By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: github.com/Aevann1/PaladinsRankedStats - Stats for patch: v{patch} - Contact me on discord: Aevann#6346\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+
+			open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+
+			sheet = gc.open_by_key(googlesheetid)
+			for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card (All Ranks)', 'By Card (Diamond+)', 'By Item (All Ranks)', 'By Item (Diamond+)', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average DPS,HPS,SPS (All Ranks)', 'Average DPS,HPS,SPS (Diamond+)']:
+				while True:
+					try: sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
+					except Exception as e:
+						if 'Quota exceeded for quota group' not in str(e): print(e)
+						gcn += 1
+						sheet = gcs[gcn].open_by_key(googlesheetid)
+						continue
+					break
+
+			sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
+			format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+			n = 1
+			cnames = ''
+			for val in gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)').col_values(2):
+				while True:
+					try:
+						if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
+						if val not in cnames:
+							format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
+							cnames += f'{val},'
+					except Exception as e:
+						if 'Quota exceeded for quota group' not in str(e):
+							print(e)
+							sys.exit()
+						gcn += 1
+						gc = gcs[gcn]
+						sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
+						continue
+					n += 1
+					break
+
+			sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
+			format_cell_range(sheet, f'B3:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
+			n = 1
+			cnames = ''
+			for val in gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)').col_values(2):
+				while True:
+					try:
+						if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
+						if val not in cnames:
+							format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
+							cnames += f'{val},'
+					except Exception as e:			
+						if 'Quota exceeded for quota group' not in str(e):
+							print(e)
+							sys.exit()
+						gcn += 1
+						gc = gcs[gcn]
+						sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
+						continue
+					n += 1
+					break
+					
 			daydt += datetime.timedelta(days=1)
 	wakeuptime = datetime.datetime.now().replace(hour=3, minute=0)
 	if str(datetime.datetime.now().hour) not in '0,1,2': wakeuptime += datetime.timedelta(days=1)
