@@ -152,25 +152,28 @@ def calcandpost():
 	open(f'{basedir2}By Card (All Ranks).csv', 'w').write(f'Champion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(cardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	itemWRs = []
-	for item, itemmatchcount in itemmatchcount.items():
-		D = itemwincount[item] / itemmatchcount
-		E = itemmatchcount
-		H = D*E
-		I = E-H
+	for K, V in itemmatchcount.items():
+		D = itemwincount[K] / V
+		champar = K.split(',')[0] + ',All Ranks'
+		ipr = V / matchcount[champar]
+		ipr = str(ipr*100).split('.')[0] + '%'
+		if len(ipr) == 2: ipr = f'0{ipr}'
+		H = D*V
+		I = V-H
 		J = 2.5758293035489
-		C1 = max(D-J/(E+J**2)*math.sqrt(H*I/E+J**2/4),0)
-		C2 = min(D+J/(E+J**2)*math.sqrt(H*I/E+J**2/4),1)
+		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
 		D = str(D*100).split('.')[0] + '%'
 		if len(D) == 2: D = f'0{D}'
 		C1 = str(C1*100).split('.')[0] + '%'
 		if len(C1) == 2: C1 = f'0{C1}'
 		C2 = str(C2*100).split('.')[0] + '%'
 		if len(C2) == 2: C2 = f'0{C2}'
-		itemWRs.append((item, D, E, C1, C2))
+		itemWRs.append((K, D, ipr, V, C1, C2))
 
-	itemWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+	itemWRs.sort(key=lambda x:(x[4], x[1], x[3]), reverse=True)
 	itemWRs.sort(key=lambda x:(x[0].split(',')[0]))
-	open(f'{basedir2}By Item (All Ranks).csv', 'w').write(f'Champion,Item,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(itemWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+	open(f'{basedir2}By Item (All Ranks).csv', 'w').write(f'Champion,Item,Winrate,Pickrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(itemWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	dcardWRs = []
 	for K, V in dcardmatchcount.items():
@@ -189,85 +192,90 @@ def calcandpost():
 		dcardWRs.append((K, D, V, C1, C2))
 	dcardWRs.sort(key=lambda x:(x[0].split(',')[3], x[3], x[1], x[2]), reverse=True)
 	dcardWRs.sort(key=lambda x: x[0].split(',')[:2])
+	diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
+	diawr = str(diawr*100).split('.')[0] + '%'
 	open(f'{basedir2}By Card (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dcardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	ditemWRs = []
-	for ditem, ditemmatchcount in ditemmatchcount.items():
-		D = ditemwincount[ditem] / ditemmatchcount
-		E = ditemmatchcount
-		H = D*E
-		I = E-H
+	for K, V in ditemmatchcount.items():
+		if str(K)== '': continue
+		D = ditemwincount[K] / V
+		champd = K.split(',')[0] + ',Diamond'
+		champm = K.split(',')[0] + ',Master'
+		ipr = V / (matchcount[champd] + matchcount[champm])
+		ipr = str(ipr*100).split('.')[0] + '%'
+		if len(ipr) == 2: ipr = f'0{ipr}'
+		H = D*V
+		I = V-H
 		J = 2.5758293035489
-		C1 = max(D-J/(E+J**2)*math.sqrt(H*I/E+J**2/4),0)
-		C2 = min(D+J/(E+J**2)*math.sqrt(H*I/E+J**2/4),1)
+		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
 		D = str(D*100).split('.')[0] + '%'
 		if len(D) == 2: D = f'0{D}'
 		C1 = str(C1*100).split('.')[0] + '%'
 		if len(C1) == 2: C1 = f'0{C1}'
 		C2 = str(C2*100).split('.')[0] + '%'
 		if len(C2) == 2: C2 = f'0{C2}'
-		ditemWRs.append((ditem, D, E, C1, C2))
+		ditemWRs.append((K, D, ipr, V, C1, C2))
 
-	ditemWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
+	ditemWRs.sort(key=lambda x:(x[4], x[1], x[3]), reverse=True)
 	ditemWRs.sort(key=lambda x:(x[0].split(',')[0]))
-	open(f'{basedir2}By Item (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Item,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(ditemWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+	open(f'{basedir2}By Item (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Item,Winrate,Pickrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(ditemWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	compWRs = []
-	for comp, compmatchcount in compmatchcount.items():
-		D = compwincount[comp] / compmatchcount
-		E = compmatchcount
-		H = D*E
-		I = E-H
+	for K, V in compmatchcount.items():
+		D = compwincount[K] / V
+		H = D*V
+		I = V-H
 		J = 2.5758293035489
-		C1 = max(D-J/(E+J**2)*math.sqrt(H*I/E+J**2/4),0)
-		C2 = min(D+J/(E+J**2)*math.sqrt(H*I/E+J**2/4),1)
+		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
 		D = str(D*100).split('.')[0] + '%'
 		if len(D) == 2: D = f'0{D}'
 		C1 = str(C1*100).split('.')[0] + '%'
 		if len(C1) == 2: C1 = f'0{C1}'
 		C2 = str(C2*100).split('.')[0] + '%'
 		if len(C2) == 2: C2 = f'0{C2}'
-		compWRs.append((comp, D, E, C1, C2))
+		compWRs.append((K, D, V, C1, C2))
 		
 	compWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
 	open(f'{basedir2}By Composition.csv', 'w').write(f'Composition,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(compWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 				
 	friendlyWRs = []
-	for k, v in friendlymatchcount.items():
-		D = friendlywincount[k] / v
-		H = D*v
-		I = v-H
+	for K, V in friendlymatchcount.items():
+		D = friendlywincount[K] / V
+		H = D*V
+		I = V-H
 		J = 2.5758293035489
-		C1 = max(D-J/(v+J**2)*math.sqrt(H*I/v+J**2/4),0)
-		C2 = min(D+J/(v+J**2)*math.sqrt(H*I/v+J**2/4),1)
+		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
 		D = str(D*100).split('.')[0] + '%'
 		if len(D) == 2: D = f'0{D}'
 		C1 = str(C1*100).split('.')[0] + '%'
 		if len(C1) == 2: C1 = f'0{C1}'
 		C2 = str(C2*100).split('.')[0] + '%'
 		if len(C2) == 2: C2 = f'0{C2}'
-		friendlyWRs.append((k, D, v, C1, C2))
+		friendlyWRs.append((K, D, V, C1, C2))
 
 	friendlyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
 	friendlyWRs.sort(key=lambda x:(x[0].split(',')[0]))
 	open(f'{basedir2}By Friendly Champion.csv', 'w').write(f'1st Champion,2nd Champion,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(friendlyWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 	
 	enemyWRs = []
-	for combo, count in enemymatchcount.items():
-		D = (count - enemywincount[combo]) / count
-		E = count
-		H = D*E
-		I = E-H
+	for K, V in enemymatchcount.items():
+		D = (V - enemywincount[K]) / V
+		H = D*V
+		I = V-H
 		J = 2.5758293035489
-		C1 = max(D-J/(E+J**2)*math.sqrt(H*I/E+J**2/4),0)
-		C2 = min(D+J/(E+J**2)*math.sqrt(H*I/E+J**2/4),1)
+		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
 		D = str(D*100).split('.')[0] + '%'
 		if len(D) == 2: D = f'0{D}'
 		C1 = str(C1*100).split('.')[0] + '%'
 		if len(C1) == 2: C1 = f'0{C1}'
 		C2 = str(C2*100).split('.')[0] + '%'
 		if len(C2) == 2: C2 = f'0{C2}'
-		enemyWRs.append((combo, D, E, C1, C2))
+		enemyWRs.append((K, D, V, C1, C2))
 
 	enemyWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
 	enemyWRs.sort(key=lambda x:(x[0].split(',')[0]))
@@ -290,8 +298,8 @@ def calcandpost():
 		H = D*E
 		I = E-H
 		J = 2.5758293035489
-		C1 = max(D-J/(E+J**2)*math.sqrt(H*I/E+J**2/4),0)
-		C2 = min(D+J/(E+J**2)*math.sqrt(H*I/E+J**2/4),1)
+		C1 = max(D-J/(V+J**2)*math.sqrt(H*I/V+J**2/4),0)
+		C2 = min(D+J/(V+J**2)*math.sqrt(H*I/V+J**2/4),1)
 		D = str(i[1]*100).split('.')[0] + '%'
 		C1 = str(C1*100).split('.')[0] + '%'
 		C2 = str(C2*100).split('.')[0] + '%'
@@ -332,14 +340,12 @@ def calcandpost():
 	for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'All Ranks']: rankwinrates = rankwinrates.replace(r, f'{r}: {avgrankwinrates[r]}')
 	open(f'{basedir2}By Player Rank.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,Champion Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + rankwinrates)
 
-	open(f'{basedir2}Winrates By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: github.com/Aevann1/PaladinsRankedData - Data for patch: v{patch} - Contact me on discord: Aevann#6346\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+	open(f'{basedir2}Winrates By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: github.com/Aevann1/PaladinsRankedStats - Stats for patch: v{patch} - Contact me on discord: Aevann#6346\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
-	diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
-	diawr = str(diawr*100).split('.')[0] + '%'
 	open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 	sheet = gc.open_by_key(googlesheetid)
-	for i in ['By Card (Diamond+)', 'By Item (Diamond+)', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Average DPS,HPS,SPS (Diamond+)']:
+	for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card (All Ranks)', 'By Card (Diamond+)', 'By Item (All Ranks)', 'By Item (Diamond+)', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average DPS,HPS,SPS (All Ranks)', 'Average DPS,HPS,SPS (Diamond+)']:
 		while True:
 			try:
 				sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
@@ -532,11 +538,12 @@ while True:
 
 						if str(playernumber)[-1:] == '0':
 							for K, V in parties.items():
-								if V[0] not in partymatchcount:
-									partymatchcount[V[0]] = 0
-									partywincount[V[0]] = 0
-								partymatchcount[V[0]] += 1
-								if V[1] == 'Winner': partywincount[V[0]] += 1
+								size = str(V[0])
+								if size not in partymatchcount:
+									partymatchcount[size] = 0
+									partywincount[size] = 0
+								partymatchcount[size] += 1
+								if V[1] == 'Winner': partywincount[size] += 1
 							for K, V in dparties.items():
 								if '1' not in dpartymatchcount:
 									dpartymatchcount['1'] = 0
@@ -567,11 +574,11 @@ while True:
 						
 						elif party not in dparties:
 							if party == 0:
-								if 1 not in partymatchcount:
-									partymatchcount[1] = 0
-									partywincount[1] = 0
-								partymatchcount[1] += 1
-								if player['Win_Status'] == 'Winner': partywincount[1] += 1	
+								if '1' not in partymatchcount:
+									partymatchcount['1'] = 0
+									partywincount['1'] = 0
+								partymatchcount['1'] += 1
+								if player['Win_Status'] == 'Winner': partywincount['1'] += 1	
 							elif  party in parties: parties[party] = [parties[party][0]+1 , parties[party][1]]
 							else: parties[party] = [1, player['Win_Status']]
 						
@@ -785,7 +792,7 @@ while True:
 			open(f'{basedir2}dpartywincount.json', 'w').write(json.dumps(dpartywincount))
 
 			if hour == '-1':
-				backupdir = f'{basedir1}/paladinsrankeddata backup/{patch} {queue}/'
+				backupdir = f'{basedir1}/PaladinsRankedStats backup/{patch} {queue}/'
 				if not os.path.exists(backupdir): os.mkdir(backupdir)
 				backupdir += f'{day} '
 				open(f'{backupdir}matchcount.json', 'w').write(str(day) +  json.dumps(matchcount))
