@@ -562,8 +562,8 @@ while True:
 				noitemwr = noitemwincount[K] / noitemmatchcount[K]
 				noitemwr = str(noitemwr*100).split('.')[0] + '%'
 				itemWRs.append((K, noitemwr, D, V, noitemmatchcount[K]))
-			itemWRs.sort(key=lambda x: (x[1], x[2]), reverse=True)
-			itemWRs.sort(key=lambda x: x[0].split(',')[0])
+			itemWRs.sort(key=lambda x: x[2], reverse=True)
+			itemWRs.sort(key=lambda x: (x[0].split(',')[0], x[1]))
 			open(f'{basedir2}By Item (All Ranks).csv', 'w').write(f'Champion,Item,Winrate without Item,Winrate with Item,Match Count with Item,Match Count without Item\n' + str(itemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
 			
 			diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
@@ -580,8 +580,8 @@ while True:
 				noitemwr = dnoitemwincount[K] / dnoitemmatchcount[K]
 				noitemwr = str(noitemwr*100).split('.')[0] + '%'
 				ditemWRs.append((K, noitemwr, D, V, dnoitemmatchcount[K]))
-			ditemWRs.sort(key=lambda x: (x[1], x[2]), reverse=True)
-			ditemWRs.sort(key=lambda x: x[0].split(',')[0])
+			ditemWRs.sort(key=lambda x: x[2], reverse=True)
+			ditemWRs.sort(key=lambda x: (x[0].split(',')[0], x[1]))
 			open(f'{basedir2}By Item (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Item,Winrate without Item,Winrate with Item,Match Count with Item, Match Count without Item\n' + str(ditemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
 			
 			cardWRs = []
@@ -745,7 +745,8 @@ while True:
 			open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 			sheet = gc.open_by_key(googlesheetid)
-			for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card (All Ranks)', 'By Card (Diamond+)', 'By Item (All Ranks)', 'By Item (Diamond+)', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average DPS,HPS,SPS (All Ranks)', 'Average DPS,HPS,SPS (Diamond+)']:
+			#for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card (All Ranks)', 'By Card (Diamond+)', 'By Item (All Ranks)', 'By Item (Diamond+)', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average DPS,HPS,SPS (All Ranks)', 'Average DPS,HPS,SPS (Diamond+)']:
+			for i in ['By Item (All Ranks)', 'By Item (Diamond+)', 'Banrates']:
 				while True:
 					try: sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
 					except Exception as e:
