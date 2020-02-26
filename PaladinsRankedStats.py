@@ -745,8 +745,7 @@ while True:
 			open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 			sheet = gc.open_by_key(googlesheetid)
-			#for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card (All Ranks)', 'By Card (Diamond+)', 'By Item (All Ranks)', 'By Item (Diamond+)', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average DPS,HPS,SPS (All Ranks)', 'Average DPS,HPS,SPS (Diamond+)']:
-			for i in ['By Item (All Ranks)', 'By Item (Diamond+)', 'Banrates']:
+			for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map', 'By Card (All Ranks)', 'By Card (Diamond+)', 'By Item (All Ranks)', 'By Item (Diamond+)', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average DPS,HPS,SPS (All Ranks)', 'Average DPS,HPS,SPS (Diamond+)']:
 				while True:
 					try: sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
 					except Exception as e:
