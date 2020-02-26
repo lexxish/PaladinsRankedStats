@@ -559,9 +559,13 @@ while True:
 				champar = K.split(',')[0] + ',All Ranks'
 				D = str(D*100).split('.')[0] + '%'
 				if len(D) == 2: D = f'0{D}'
-				noitemwr = noitemwincount[K] / noitemmatchcount[K]
-				noitemwr = str(noitemwr*100).split('.')[0] + '%'
-				itemWRs.append((K, noitemwr, D, V, noitemmatchcount[K]))
+				noitemmc = 0
+				noitemwr = ''
+				if K in noitemmatchcount: 
+					noitemmc = noitemmatchcount[K]
+					noitemwr = noitemwincount[K] / noitemmc
+					noitemwr = str(noitemwr*100).split('.')[0] + '%'
+				itemWRs.append((K, noitemwr, D, V, noitemmc))
 			itemWRs.sort(key=lambda x: x[2], reverse=True)
 			itemWRs.sort(key=lambda x: (x[0].split(',')[0], x[1]))
 			open(f'{basedir2}By Item (All Ranks).csv', 'w').write(f'Champion,Item,Winrate without Item,Winrate with Item,Match Count with Item,Match Count without Item\n' + str(itemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
@@ -577,9 +581,13 @@ while True:
 				champm = K.split(',')[0] + ',Master'
 				D = str(D*100).split('.')[0] + '%'
 				if len(D) == 2: D = f'0{D}'
-				noitemwr = dnoitemwincount[K] / dnoitemmatchcount[K]
-				noitemwr = str(noitemwr*100).split('.')[0] + '%'
-				ditemWRs.append((K, noitemwr, D, V, dnoitemmatchcount[K]))
+				noitemmc = 0
+				noitemwr = ''
+				if K in dnoitemmatchcount: 
+					noitemmc = dnoitemmatchcount[K]
+					noitemwr = dnoitemwincount[K] / noitemmc
+					noitemwr = str(noitemwr*100).split('.')[0] + '%'
+				ditemWRs.append((K, noitemwr, D, V, noitemmc))
 			ditemWRs.sort(key=lambda x: x[2], reverse=True)
 			ditemWRs.sort(key=lambda x: (x[0].split(',')[0], x[1]))
 			open(f'{basedir2}By Item (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Item,Winrate without Item,Winrate with Item,Match Count with Item, Match Count without Item\n' + str(ditemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
@@ -798,7 +806,6 @@ while True:
 						continue
 					n += 1
 					break
-					
 			daydt += datetime.timedelta(days=1)
 	wakeuptime = datetime.datetime.now().replace(hour=3, minute=0)
 	if str(datetime.datetime.now().hour) not in '0,1,2': wakeuptime += datetime.timedelta(days=1)
