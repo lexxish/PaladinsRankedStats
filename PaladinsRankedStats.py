@@ -181,10 +181,8 @@ while True:
 						party = player['PartyId']
 						rank = rankindex[player['League_Tier']]
 						if rank in 'Diamond,Master':
-							if party in parties:
-								del parties[party]
-								continue
-							if party == 0:
+							if party in parties: del parties[party]
+							elif party == 0:
 								if '1' not in dpartymatchcount:
 									dpartymatchcount['1'] = 0
 									dpartywincount['1'] = 0
@@ -799,6 +797,7 @@ while True:
 						continue
 					n += 1
 					break
+			if hour != '-1': sys.exit()
 			daydt += datetime.timedelta(days=1)
 	wakeuptime = datetime.datetime.now().replace(hour=3, minute=0)
 	if str(datetime.datetime.now().hour) not in '0,1,2': wakeuptime += datetime.timedelta(days=1)
