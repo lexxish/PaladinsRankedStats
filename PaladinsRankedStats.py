@@ -472,7 +472,7 @@ while True:
 				dmapWRs.append((cclass[K.split(',')[0]] + f',{K}'.replace('Ranked ',''), D, V, C1, C2)) 
 			dmapWRs.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
 			dmapWRs.sort(key=lambda x: x[0].split(',')[0] + x[0].split(',')[1])
-			open(f'{basedir2}By Map (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Map,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dmapWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}By Map (D+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Map,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dmapWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 			
 			dpartyWRs = []
 			for K, V in dpartymatchcount.items():
@@ -490,7 +490,7 @@ while True:
 				if len(C2) == 2: C2 = f'0{C2}'
 				dpartyWRs.append((K, D, V, C1, C2))
 			dpartyWRs.sort(key=lambda x: x[0])
-			open(f'{basedir2}By Party Size (Diamond+).csv', 'w').write(f'Party Size,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dpartyWRs).replace('"' , "'").replace("'), (" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[2:-3])
+			open(f'{basedir2}By Party Size (D+).csv', 'w').write(f'Party Size,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dpartyWRs).replace('"' , "'").replace("'), (" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[2:-3])
 
 			partyWRs = []
 			for K, V in partymatchcount.items():
@@ -522,7 +522,7 @@ while True:
 				else: cc= cclass[k.split(",")[0]]
 				avgs.append((cc, k, avgdps[k], avghps[k], v/avgmatchcount[k], avgmatchcount[k]))
 			avgs.sort(key=lambda x: (-x[2], -x[3], -x[4], -x[5]))
-			open(f'{basedir2}Average DPS,HPS,SPS (All Ranks).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(avgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
+			open(f'{basedir2}Average DPS,HPS,SPS (All).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(avgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
 
 			davgdps = {}
 			for k, v in ddps.items(): davgdps[k] = v/davgmatchcount[k]
@@ -536,7 +536,7 @@ while True:
 				else: cc= cclass[k.split(",")[0]]
 				davgs.append((cc, k, davgdps[k], davghps[k], v/davgmatchcount[k], davgmatchcount[k]))
 			davgs.sort(key=lambda x: (-x[2], -x[3], -x[4], -x[5]))
-			open(f'{basedir2}Average DPS,HPS,SPS (Diamond+).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(davgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
+			open(f'{basedir2}Average DPS,HPS,SPS (D+).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(davgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
 
 			banrate = []
 			for k, v in bancount.items():
@@ -565,7 +565,7 @@ while True:
 				itemWRs.append((K, noitemwr, D, noitemmc, V))
 			itemWRs.sort(key=lambda x: x[2], reverse=True)
 			itemWRs.sort(key=lambda x: (x[0].split(',')[0], x[1]))
-			open(f'{basedir2}By Item (All Ranks).csv', 'w').write(f'Champion,Item,Winrate without Item,Winrate with Item,Match Count without Item,Match Count with Item\n' + str(itemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
+			open(f'{basedir2}By Item (All).csv', 'w').write(f'Champion,Item,Winrate without Item,Winrate with Item,Match Count without Item,Match Count with Item\n' + str(itemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
 
 			ditemWRs = []
 			for K, V in ditemmatchcount.items():
@@ -584,7 +584,7 @@ while True:
 				ditemWRs.append((K, noitemwr, D, noitemmc, V))
 			ditemWRs.sort(key=lambda x: x[2], reverse=True)
 			ditemWRs.sort(key=lambda x: (x[0].split(',')[0], x[1]))
-			open(f'{basedir2}By Item (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Item,Winrate without Item,Winrate with Item,Match Count without Item,Match Count with Item\n' + str(ditemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
+			open(f'{basedir2}By Item (D+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Item,Winrate without Item,Winrate with Item,Match Count without Item,Match Count with Item\n' + str(ditemWRs).replace('"' , "'").replace("), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-2])
 			
 			cardWRs = []
 			for K, V in cardmatchcount.items():
@@ -603,7 +603,7 @@ while True:
 				cardWRs.append((K, D, V, C1, C2))
 			cardWRs.sort(key=lambda x:(x[0].split(',')[3], x[3], x[1], x[2]), reverse=True)
 			cardWRs.sort(key=lambda x: x[0].split(',')[:2])
-			open(f'{basedir2}By Card (All Ranks).csv', 'w').write(f'Champion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(cardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}By Card (All).csv', 'w').write(f'Champion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(cardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 			dcardWRs = []
 			for K, V in dcardmatchcount.items():
@@ -622,7 +622,7 @@ while True:
 				dcardWRs.append((K, D, V, C1, C2))
 			dcardWRs.sort(key=lambda x:(x[0].split(',')[3], x[3], x[1], x[2]), reverse=True)
 			dcardWRs.sort(key=lambda x: x[0].split(',')[:2])
-			open(f'{basedir2}By Card (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dcardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}By Card (D+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nChampion,Talent,Card,Card Level,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(dcardWRs).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 			compWRs = []
 			for K, V in compmatchcount.items():
@@ -733,7 +733,7 @@ while True:
 
 			open(f'{basedir2}By Skin.csv', 'w').write(f'Champion,Skin,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(skinwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
-			open(f'{basedir2}By Map (All Ranks).csv', 'w').write(f'Class,Champion,Map,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(mapwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+			open(f'{basedir2}By Map (All).csv', 'w').write(f'Class,Champion,Map,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(mapwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 			rankwinrates = str(rankwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]
 			for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'All Ranks']: rankwinrates = rankwinrates.replace(r, f'{r}: {avgrankwinrates[r]}')
@@ -744,7 +744,7 @@ while True:
 			open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
 			sheet = gc.open_by_key(googlesheetid)
-			for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Map (All Ranks)', 'By Map (Diamond+)', 'By Card (All Ranks)', 'By Card (Diamond+)', 'By Item (All Ranks)', 'By Item (Diamond+)', 'By Enemy Champion', 'By Friendly Champion', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (Diamond+)', 'Banrates', 'Average DPS,HPS,SPS (All Ranks)', 'Average DPS,HPS,SPS (Diamond+)']:
+			for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Enemy Champion', 'By Friendly Champion', 'By Map (All)', 'By Map (D+)', 'By Card (All)', 'By Card (D+)', 'By Item (All)', 'By Item (D+)', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (D+)', 'Banrates', 'Average DPS,HPS,SPS (All)', 'Average DPS,HPS,SPS (D+)']:
 				while True:
 					try: sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
 					except Exception as e:
