@@ -11,10 +11,11 @@ basedir1 = os.path.dirname(os.path.realpath(__file__))
 sheetsapikey1 = f'{basedir1}/sheetsapikey1.json' #INSERT THE LOCATION OF YOUR FIRST GOOGLE SHEETS API KEY
 sheetsapikey2 = f'{basedir1}/sheetsapikey2.json' #INSERT THE LOCATION OF YOUR SECOND GOOGLE SHEETS API KEY
 sheetsapikey3 = f'{basedir1}/sheetsapikey3.json' #INSERT THE LOCATION OF YOUR THIRD GOOGLE SHEETS API KEY
-firstday = '20200126' #ENTER THE FIRST DAY YOU WANNA START COMPILING FROM IN YYYYMMDD FORMAT, MUST NOT BE LATER THAN 30 DAYS FROM TODAY
+firstday = '20200304' #ENTER THE FIRST DAY YOU WANNA START COMPILING FROM IN YYYYMMDD FORMAT, MUST NOT BE LATER THAN 30 DAYS FROM TODAY
 hour = '-1'
 rankindex = ['Qualifying', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Silver', 'Silver', 'Silver', 'Silver', 'Silver', 'Gold', 'Gold', 'Gold', 'Gold', 'Gold', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Master', 'Master', 'All Ranks']
 itemindex = ['Illuminate','Resilience','Blast Shields','Haven','Master Riding','Morale Boost','Nimble','Chronos','Kill to Heal','Life Rip','Rejuvenate','Veteran','Bulldozer','Deft Hands','Cauterize','Wrecker']
+
 
 while True:
 	t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
@@ -34,7 +35,7 @@ while True:
 	else: date -= datetime.timedelta(days=1)
 	date = date.date()
 	for queue in ['486', '428']:
-		print(queue)
+		print(f'{patch}\n{queue}')
 		if os.path.exists( f'{basedir1}/{patch} {queue}/matchcount.json'): day = open(f'{basedir1}/{patch} {queue}/matchcount.json').read()[:8]
 		else: day = firstday
 		daydt = datetime.datetime(int(day[:4]), int(day[4] + day[5]), int(day[-2:])).date() + datetime.timedelta(days=1)
@@ -157,7 +158,11 @@ while True:
 					li = list(mdata.split(',{"Account_Level'))
 					for player in li:
 						if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
-						player = json.loads(player)
+						try: player = json.loads(player)
+						except Exception as e:
+							print(e)
+							print(player)
+							sys.exit()
 						champ = player['Reference_Name'].replace('\\', '')
 						if len(li) != 100: continue
 
@@ -406,7 +411,7 @@ while True:
 					continue
 				break
 
-			if hour == '-1':
+			if hour == '-1' or hour == '':
 				if not os.path.exists(basedir2): os.mkdir(basedir2)
 				backupdir = f'{basedir1}/PaladinsRankedStats backup/{patch} {queue}/'
 				if not os.path.exists(backupdir): os.mkdir(backupdir)
@@ -700,8 +705,11 @@ while True:
 				C1 = max(D-J/(E+J**2)*math.sqrt(H*I/E+J**2/4),0)
 				C2 = min(D+J/(E+J**2)*math.sqrt(H*I/E+J**2/4),1)
 				D = str(i[1]*100).split('.')[0] + '%'
+				if len(D) == 2: D = f'0{D}'
 				C1 = str(C1*100).split('.')[0] + '%'
+				if len(C1) == 2: C1 = f'0{C1}'
 				C2 = str(C2*100).split('.')[0] + '%'
+				if len(C2) == 2: C2 = f'0{C2}'
 				if '#' in i[0]: skinwinrates.append((i[0].replace('#', ''), D, E, C1, C2))
 				elif 'Ranked' in i[0]: mapwinrates.append((cclass[i[0].split(',')[0]] + f',{i[0]}'.replace('Ranked ',''), D, E, C1, C2)) 
 				elif any(f',{r}' in i[0] for r in rankindex): rankwinrates.append((cclass[i[0].split(',')[0]] + f',{i[0]}', D, E, C1, C2))
@@ -797,7 +805,6 @@ while True:
 						continue
 					n += 1
 					break
-			if hour != '-1': sys.exit()
 			daydt += datetime.timedelta(days=1)
 	wakeuptime = datetime.datetime.now().replace(hour=3, minute=0)
 	if str(datetime.datetime.now().hour) not in '0,1,2': wakeuptime += datetime.timedelta(days=1)
