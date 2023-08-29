@@ -1,5 +1,12 @@
-#CONTACT ME FOR QUESTIONS AND SUGGESTIONS ON DISCORD Aevann#6346
-## Actually don't, I think this guy is dead
+### Discord of original developer (until they deleted themselves from the internet) - Aevann#6346
+### No updates are going to be done unless told otherwise
+### If you want to work on that thing hovewer here's a possible TODO list:
+###   create a config file
+###   transition from JSON to SQL (since JSON tends to break when there are files bigger than it's ego)
+###   use proper functions for repeating code (maybe from numpy)
+###   optimize google sheet calls so that it doesn't have to use 3 accounts with 3 different API keys (it actually doesn't have to anymore already)
+###   rewrite everything from scratch (even better)
+
 import sys, os, datetime, pytz, hashlib, requests, json, re, time, gspread, sys, datetime, os, csv, math
 from oauth2client.service_account import ServiceAccountCredentials
 from gspread_formatting import *
@@ -751,11 +758,11 @@ while True:
             for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'All Ranks']: rankwinrates = rankwinrates.replace(r, f'{r}: {avgrankwinrates[r]}')
             open(f'{basedir2}By Player Rank.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,Champion Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + rankwinrates)
 
-            open(f'{basedir2}Winrates By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: github.com/Aevann1/PaladinsRankedStats - Stats for patch: v{patch} - Contact me on discord: Aevann#6346\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
+            open(f'{basedir2}Winrates By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: https://github.com/lexxish/PaladinsRankedStats - Stats for patch: v{patch}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
             open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
-            print("logging in")
+            print("Editing google sheets")
             sheet = gc.open_by_key(googlesheetid)
             for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Enemy Champion', 'By Friendly Champion', 'By Map (All)', 'By Map (D+)', 'By Card (All)', 'By Card (D+)', 'By Item (All)', 'By Item (D+)', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (D+)', 'Banrates', 'Average DPS,HPS,SPS (All)', 'Average DPS,HPS,SPS (D+)']:
                 while True:
