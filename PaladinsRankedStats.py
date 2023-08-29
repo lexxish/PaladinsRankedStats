@@ -12,7 +12,7 @@ basedir1 = os.path.dirname(os.path.realpath(__file__))
 sheetsapikey1 = f'{basedir1}/sheetsapikey1.json' #INSERT THE LOCATION OF YOUR FIRST GOOGLE SHEETS API KEY
 sheetsapikey2 = f'{basedir1}/sheetsapikey2.json' #INSERT THE LOCATION OF YOUR SECOND GOOGLE SHEETS API KEY
 sheetsapikey3 = f'{basedir1}/sheetsapikey3.json' #INSERT THE LOCATION OF YOUR THIRD GOOGLE SHEETS API KEY
-firstday = '20200304' #ENTER THE FIRST DAY YOU WANNA START COMPILING FROM IN YYYYMMDD FORMAT, MUST NOT BE LATER THAN 30 DAYS FROM TODAY
+firstday = '20230801' #ENTER THE FIRST DAY YOU WANNA START COMPILING FROM IN YYYYMMDD FORMAT, MUST NOT BE LATER THAN 30 DAYS FROM TODAY
 hour = '-1'
 rankindex = ['Qualifying', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Silver', 'Silver', 'Silver', 'Silver', 'Silver', 'Gold', 'Gold', 'Gold', 'Gold', 'Gold', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Master', 'Master', 'All Ranks']
 itemindex = ['Illuminate','Resilience','Blast Shields','Haven','Master Riding','Morale Boost','Nimble','Chronos','Kill to Heal','Life Rip','Rejuvenate','Veteran','Bulldozer','Deft Hands','Cauterize','Wrecker']
@@ -22,9 +22,9 @@ while True:
     t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
     while True:
         try:
-            s = json.loads(requests.get(f'http://api.paladins.com/paladinsapi.svc/createsessionJson/{devid}/' + hashlib.md5((f'{devid}createsession{authkey}{t}').encode('utf-8')).hexdigest() + f'/{t}', timeout=10).content)['session_id']
-            patch = json.loads(requests.get(f'http://api.paladins.com/paladinsapi.svc/getpatchinfoJson/{devid}/' + hashlib.md5((f'{devid}getpatchinfo{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}', timeout=10).content)['version_string']
-            cclasses = enumerate(json.loads(requests.get(f'http://api.paladins.com/paladinsapi.svc/getchampionsjson/{devid}/' + hashlib.md5((f'{devid}getchampions{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/1', timeout=10).content))
+            s = json.loads(requests.get(f'https://api.paladins.com/paladinsapi.svc/createsessionJson/{devid}/' + hashlib.md5((f'{devid}createsession{authkey}{t}').encode('utf-8')).hexdigest() + f'/{t}', timeout=10).content)['session_id']
+            patch = json.loads(requests.get(f'https://api.paladins.com/paladinsapi.svc/getpatchinfoJson/{devid}/' + hashlib.md5((f'{devid}getpatchinfo{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}', timeout=10).content)['version_string']
+            cclasses = enumerate(json.loads(requests.get(f'https://api.paladins.com/paladinsapi.svc/getchampionsjson/{devid}/' + hashlib.md5((f'{devid}getchampions{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/1', timeout=10).content))
         except Exception as e: 
             print(e)
             continue
@@ -50,6 +50,7 @@ while True:
                 googlesheetid = controllergooglesheetid
                 otherversion = f'Keyboard & Mouse version: docs.google.com/spreadsheets/d/{kbmgooglesheetid}'
             basedir2 = f'{basedir1}/{patch} {queue}/'
+            if not os.path.isdir(basedir2): os.mkdir(basedir2)
             if os.path.exists( f'{basedir2}matchcount.json'): matchcount = json.loads(open( f'{basedir2}matchcount.json').read()[8:])
             else: matchcount = {}
             if os.path.exists( f'{basedir2}wincount.json'): wincount = json.loads(open(f'{basedir2}wincount.json').read())
@@ -127,7 +128,7 @@ while True:
             
             t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
             while True:
-                try: matches = str(requests.get(f'http://api.paladins.com/paladinsapi.svc/getmatchidsbyqueuejson/{devid}/' + hashlib.md5((f'{devid}getmatchidsbyqueue{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/{queue}/{day}/{hour}', timeout=10).content)
+                try: matches = str(requests.get(f'https://api.paladins.com/paladinsapi.svc/getmatchidsbyqueuejson/{devid}/' + hashlib.md5((f'{devid}getmatchidsbyqueue{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/{queue}/{day}/{hour}', timeout=10).content)
                 except Exception as e: 
                     print(e)
                     continue
@@ -142,7 +143,7 @@ while True:
                 if str(x).endswith('0') or x == n:
                     t = str(datetime.datetime.now(pytz.timezone('UTC')).strftime('%Y%m%d%H%M%S'))
                     while True:
-                        try: mdata = requests.get(f'http://api.paladins.com/paladinsapi.svc/getmatchdetailsbatchjson/{devid}/' + hashlib.md5((f'{devid}getmatchdetailsbatch{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/{m}'[:-1], timeout=10).content[1:-1].decode('utf-8')
+                        try: mdata = requests.get(f'https://api.paladins.com/paladinsapi.svc/getmatchdetailsbatchjson/{devid}/' + hashlib.md5((f'{devid}getmatchdetailsbatch{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}/{m}'[:-1], timeout=10).content[1:-1].decode('utf-8')
                         except Exception as e: 
                             print(e)
                             continue
@@ -158,13 +159,19 @@ while True:
                     dparties = {}
                     li = list(mdata.split(',{"Account_Level'))
                     for player in li:
+                        if len(player) < 1: continue
                         if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
                         try: player = json.loads(player)
                         except Exception as e:
                             print(e)
                             print(player)
-                            sys.exit()
-                        champ = player['Reference_Name'].replace('\\', '')
+                            #sys.exit() # fuck this
+                            break
+                        try:
+                            champ = player['Reference_Name'].replace('\\', '')
+                        except Exception as e:
+                            print(e)
+                            break
                         if len(li) != 100: continue
 
                         if str(playernumber)[-1:] == '0':
@@ -406,14 +413,16 @@ while True:
                             if rank in 'DiamondMaster': wincount[rankchamptalent] += 1
                     
             while True:
-                try: print(str(requests.get(f'http://api.paladins.com/paladinsapi.svc/getdatausedjson/{devid}/' + hashlib.md5((f'{devid}getdataused{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}', timeout=10).content))
+                try: print(str(requests.get(f'https://api.paladins.com/paladinsapi.svc/getdatausedjson/{devid}/' + hashlib.md5((f'{devid}getdataused{authkey}{t}').encode('utf-8')).hexdigest() + f'/{s}/{t}', timeout=10).content))
                 except Exception as e: 
                     print(e)
                     continue
                 break
 
-            if hour == '-1' or hour == '':
+            if hour == '-1' or hour == '': # Don't do this or crash otherwise
                 if not os.path.exists(basedir2): os.mkdir(basedir2)
+                backupdir1 = f'{basedir1}/PaladinsRankedStats backup/'
+                if not os.path.exists(backupdir1): os.mkdir(backupdir1)
                 backupdir = f'{basedir1}/PaladinsRankedStats backup/{patch} {queue}/'
                 if not os.path.exists(backupdir): os.mkdir(backupdir)
                 backupdir += f'{day} '
@@ -717,16 +726,10 @@ while True:
                 elif any(r == i[0] for r in rankindex): avgrankwinrates[i[0]] = str(i[1]*100).split('.')[0] + '%'
                 elif i[0].startswith('Diamond+,'):
                     i0 = i[0].replace('Diamond+,', '')
-                    if i0 == 'Grohk,Maelstrom': cc = 'Damage'
-                    elif i0 == 'Pip,Catalyst': cc =  'Flank'
-                    elif i0 == 'Skye,Smoke and Dagger': cc =  'Support'
-                    else: cc= cclass[i0.split(",")[0]]
+                    cc = cclass[i0.split(",")[0]]
                     diamondpustalentwinrates.append((cc, i0, D, E, C1, C2))
                 else:
-                    if i[0] == 'Grohk,Maelstrom': cc = 'Damage'
-                    elif i[0] == 'Pip,Catalyst': cc =  'Flank'
-                    elif i[0] == 'Skye,Smoke and Dagger': cc =  'Support'
-                    else: cc= cclass[i[0].split(",")[0]]
+                    cc = cclass[i[0].split(",")[0]]
                     talentwinrates.append((cc, i[0], D, E, C1, C2))
 
             skinwinrates.sort(key=lambda x:(x[3], x[1], x[2]), reverse=True)
@@ -752,59 +755,23 @@ while True:
 
             open(f'{basedir2}By Talent (Diamond+).csv', 'w').write(f'Average winrate of Diamond+ players: {diawr}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(diamondpustalentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
+            print("logging in")
             sheet = gc.open_by_key(googlesheetid)
             for i in ['Winrates By Talent (All Ranks)', 'By Talent (Diamond+)', 'By Player Rank', 'By Enemy Champion', 'By Friendly Champion', 'By Map (All)', 'By Map (D+)', 'By Card (All)', 'By Card (D+)', 'By Item (All)', 'By Item (D+)', 'By Skin', 'By Composition', 'By Party Size (Bronze to Platinum)', 'By Party Size (D+)', 'Banrates', 'Average DPS,HPS,SPS (All)', 'Average DPS,HPS,SPS (D+)']:
                 while True:
-                    try: sheet.values_update(i,params={'valueInputOption': 'USER_ENTERED'},body={'values': list(csv.reader(open(f'{basedir2}{i}.csv')))})
+                    tl = list(csv.reader(open(f'{basedir2}{i}.csv'))) # properly calc required amount of cells
+                    n = len(tl)
+                    try:
+                        ws = sheet.worksheet(i) #why god
+                        sheet.del_worksheet(ws)
+                    except:
+                        pass
+                        
+                    ws = sheet.add_worksheet(i, n, 10)
+                    try: ws.batch_update([{'range': f"A1:J{n}", 'values': tl}], raw=True)
                     except Exception as e:
                         if 'Quota exceeded for quota group' not in str(e): print(e)
-                        gcn += 1
-                        sheet = gcs[gcn].open_by_key(googlesheetid)
-                        continue
-                    break
-
-            sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
-            format_cell_range(sheet, f'B4:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
-            n = 1
-            cnames = ''
-            for val in gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)').col_values(2):
-                while True:
-                    try:
-                        if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
-                        if val not in cnames:
-                            format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
-                            cnames += f'{val},'
-                    except Exception as e:
-                        if 'Quota exceeded for quota group' not in str(e):
-                            print(e)
-                            sys.exit()
-                        gcn += 1
-                        gc = gcs[gcn]
-                        sheet = gc.open_by_key(googlesheetid).worksheet('Winrates By Talent (All Ranks)')
-                        continue
-                    n += 1
-                    break
-
-            sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
-            format_cell_range(sheet, f'B3:B{sheet.row_count}', cellFormat(textFormat=textFormat(bold=False)))
-            n = 1
-            cnames = ''
-            for val in gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)').col_values(2):
-                while True:
-                    try:
-                        if val in 'GrohkPipSkye': val = sheet.acell(f'A{n}').value + val
-                        if val not in cnames:
-                            format_cell_range(sheet, f'B{n}:B{n}', cellFormat(textFormat=textFormat(bold=True)))
-                            cnames += f'{val},'
-                    except Exception as e:            
-                        if 'Quota exceeded for quota group' not in str(e):
-                            print(e)
-                            sys.exit()
-                        gcn += 1
-                        gc = gcs[gcn]
-                        sheet = gc.open_by_key(googlesheetid).worksheet('By Talent (Diamond+)')
-                        continue
-                    n += 1
+                        raise
                     break
             daydt += datetime.timedelta(days=1)
     wakeuptime = datetime.datetime.now().replace(hour=3, minute=0)
