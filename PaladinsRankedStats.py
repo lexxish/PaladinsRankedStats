@@ -22,7 +22,7 @@ sheetsapikey3 = f'{basedir1}/sheetsapikey3.json' #INSERT THE LOCATION OF YOUR TH
 firstday = '20230801' #ENTER THE FIRST DAY YOU WANNA START COMPILING FROM IN YYYYMMDD FORMAT, MUST NOT BE LATER THAN 30 DAYS FROM TODAY
 hour = '-1'
 rankindex = ['Qualifying', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Silver', 'Silver', 'Silver', 'Silver', 'Silver', 'Gold', 'Gold', 'Gold', 'Gold', 'Gold', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Master', 'Master', 'All Ranks']
-itemindex = ['Illuminate','Resilience','Blast Shields','Haven','Master Riding','Morale Boost','Nimble','Chronos','Kill to Heal','Life Rip','Rejuvenate','Veteran','Bulldozer','Deft Hands','Cauterize','Wrecker']
+itemindex = ['Illuminate','Resilience','Guardian','Haven','Nimble','Master Riding','Morale Boost','Chronos','Kill to Heal','Life Rip','Rejuvenate','Veteran','Bulldozer','Deft Hands','Lethality','Wrecker']
 
 
 while True:
