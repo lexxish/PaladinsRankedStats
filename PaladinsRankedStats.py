@@ -1,11 +1,5 @@
 ### Discord of original developer (until they deleted themselves from the internet) - Aevann#6346
-### No updates are going to be done unless told otherwise
-### If you want to work on that thing hovewer here's a possible TODO list:
-###   create a config file
-###   transition from JSON to SQL (since JSON tends to break when there are files bigger than it's ego)
-###   use proper functions for repeating code (maybe from numpy)
-###   optimize google sheet calls so that it doesn't have to use 3 accounts with 3 different API keys (it actually doesn't have to anymore already)
-###   rewrite everything from scratch (even better)
+### https://github.com/lexxish/PaladinsRankedStats - now it's located here
 
 import sys, os, datetime, pytz, hashlib, requests, json, re, time, gspread, sys, datetime, os, csv, math
 from oauth2client.service_account import ServiceAccountCredentials
