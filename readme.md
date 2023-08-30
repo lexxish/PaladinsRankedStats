@@ -15,6 +15,7 @@ If you want to work on that thing hovewer here's a possible TODO list:
     * it also doesn't work because of Aevann1's implementation so controllergooglesheet is always empty
 * implement actual ratelimiting (for both gspread and requests to paladins api)
 * account for .csv fields for having commas. Right now Omen's card "More, More, More!" displays incorrectly
+* make `itemindex` dynamic and parse it from Paladins' api so that if they change items once more it will still work
 ---
 # Installation
 0. Git clone
