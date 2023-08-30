@@ -10,10 +10,8 @@ authkey = '' #INSERT YOUR HIREZ API AUTH KEY
 kbmgooglesheetid = '1g05xgJnAR0JQXzreEOqG-xV5cd0izx67ZvOTXMZe_Zg' #INSERT YOUR KEYBOARD & MOUSE GOOGLE SHEET ID (YOU'LL FIND IT IN ITS URL)
 controllergooglesheetid = '12TrxqtZbp2G_7p0vJYPOZvpSbCxNHFIFL_d767BTF9g' #INSERT YOUR CONTROLLER GOOGLE SHEET ID (YOU'LL FIND IT IN ITS URL)
 basedir1 = os.path.dirname(os.path.realpath(__file__))
-sheetsapikey1 = f'{basedir1}/sheetsapikey1.json' #INSERT THE LOCATION OF YOUR FIRST GOOGLE SHEETS API KEY
-sheetsapikey2 = f'{basedir1}/sheetsapikey2.json' #INSERT THE LOCATION OF YOUR SECOND GOOGLE SHEETS API KEY
-sheetsapikey3 = f'{basedir1}/sheetsapikey3.json' #INSERT THE LOCATION OF YOUR THIRD GOOGLE SHEETS API KEY
 firstday = '20230801' #ENTER THE FIRST DAY YOU WANNA START COMPILING FROM IN YYYYMMDD FORMAT, MUST NOT BE LATER THAN 30 DAYS FROM TODAY
+sheetsapikey1 = f'{basedir1}/sheetsapikey1.json' #INSERT THE LOCATION OF YOUR GOOGLE SHEETS API KEY
 hour = '-1'
 rankindex = ['Qualifying', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Bronze', 'Silver', 'Silver', 'Silver', 'Silver', 'Silver', 'Gold', 'Gold', 'Gold', 'Gold', 'Gold', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Platinum', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Diamond', 'Master', 'Master', 'All Ranks']
 itemindex = ['Illuminate','Resilience','Guardian','Haven','Nimble','Master Riding','Morale Boost','Chronos','Kill to Heal','Life Rip','Rejuvenate','Veteran','Bulldozer','Deft Hands','Lethality','Wrecker']
@@ -33,7 +31,7 @@ while True:
     cclass = {}
     for ln, lc in cclasses: cclass[lc['Name']] = lc['Roles'].replace('Paladins ', '').replace('Flanker', 'Flank').replace('Front Line', 'Frontline')
     date = datetime.datetime.now()
-    if str(datetime.datetime.now().hour) in '0,1,2': date -= datetime.timedelta(days=2)
+    if str(datetime.datetime.now().hour) in '0,1,2': date -= datetime.timedelta(days=2) # WHY
     else: date -= datetime.timedelta(days=1)
     date = date.date()
     for queue in ['486', '428']:
@@ -160,18 +158,19 @@ while True:
                     dparties = {}
                     li = list(mdata.split(',{"Account_Level'))
                     for player in li:
-                        if len(player) < 1: continue
+                        if len(player) < 1: continue # If that's the end
                         if not player.startswith('{"Account_Level'): player = '{"Account_Level' + player
                         try: player = json.loads(player)
                         except Exception as e:
                             print(e)
                             print(player)
-                            #sys.exit() # fuck this
+                            #sys.exit()
                             break
+                        if not player['playerId']: continue # To escape 'Error: Value was either too large or too small for an Int16. Failing Field = skin_id'
                         try:
                             champ = player['Reference_Name'].replace('\\', '')
                         except Exception as e:
-                            print(e)
+                            print(e, player)
                             break
                         if len(li) != 100: continue
 
@@ -464,11 +463,17 @@ while True:
                     open(f'{i}dmapmatchcount.json', 'w').write(json.dumps(dmapmatchcount))
                     open(f'{i}dmapwincount.json', 'w').write(json.dumps(dmapwincount))
 
-            gcs = [gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey1, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey2, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])), gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey3, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))]
-            gcn = 0
-            gc = gcs[gcn]
+            gc = gspread.authorize(ServiceAccountCredentials.from_json_keyfile_name(sheetsapikey1, ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']))
 
-            diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
+            # It's possible to not have any diamond player playing this day
+            if not 'Diamond' in wincount: wincount['Diamond'] = 0
+            if not 'Diamond' in matchcount: matchcount['Diamond'] = 0
+            if not 'Master' in wincount: wincount['Master'] = 0
+            if not 'Master' in matchcount: matchcount['Master'] = 0
+            if matchcount['Diamond'] + matchcount['Master'] == 0:
+                diawr = 0
+            else:
+                diawr = (wincount['Diamond'] + wincount['Master']) / (matchcount['Diamond'] + matchcount['Master'])
             diawr = str(diawr*100).split('.')[0] + '%'
 
             dmapWRs = []
@@ -532,10 +537,7 @@ while True:
             for k, v in hps.items(): avghps[k] = v/avgmatchcount[k]
             avgs = []
             for k, v in sps.items():
-                if k == 'Grohk,Maelstrom': cc = 'Damage'
-                elif k == 'Pip,Catalyst': cc =  'Flank'
-                elif k == 'Skye,Smoke and Dagger': cc =  'Support'
-                else: cc= cclass[k.split(",")[0]]
+                cc = cclass[k.split(",")[0]]
                 avgs.append((cc, k, avgdps[k], avghps[k], v/avgmatchcount[k], avgmatchcount[k]))
             avgs.sort(key=lambda x: (-x[2], -x[3], -x[4], -x[5]))
             open(f'{basedir2}Average DPS,HPS,SPS (All).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(avgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
@@ -546,10 +548,7 @@ while True:
             for k, v in dhps.items(): davghps[k] = v/davgmatchcount[k]
             davgs = []
             for k, v in dsps.items():
-                if k == 'Grohk,Maelstrom': cc = 'Damage'
-                elif k == 'Pip,Catalyst': cc =  'Flank'
-                elif k == 'Skye,Smoke and Dagger': cc =  'Support'
-                else: cc= cclass[k.split(",")[0]]
+                cc = cclass[k.split(",")[0]]
                 davgs.append((cc, k, davgdps[k], davghps[k], v/davgmatchcount[k], davgmatchcount[k]))
             davgs.sort(key=lambda x: (-x[2], -x[3], -x[4], -x[5]))
             open(f'{basedir2}Average DPS,HPS,SPS (D+).csv', 'w').write(f'Class,Champion,Talent,Average DPS,Average HPS,Average SPS,Match Count\n' + str(davgs).replace('"', "'").replace("), ('" , '\n').replace("', '" , ",").replace("', " , ",")[3:-2])
@@ -698,8 +697,9 @@ while True:
 
             WRs = []
             for i1, i2 in matchcount.items():
-                winrate = str(wincount[i1] / i2)[:4]
-                WRs.append((i1, float(winrate), i2))
+                if i2 != 0:
+                    winrate = str(wincount[i1] / i2)[:4]
+                    WRs.append((i1, float(winrate), i2))
             talentwinrates = []
             diamondpustalentwinrates = []
             rankwinrates = []
@@ -749,7 +749,8 @@ while True:
             open(f'{basedir2}By Map (All).csv', 'w').write(f'Class,Champion,Map,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(mapwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])
 
             rankwinrates = str(rankwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3]
-            for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'All Ranks']: rankwinrates = rankwinrates.replace(r, f'{r}: {avgrankwinrates[r]}')
+            for r in ['Qualifying', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'All Ranks']: 
+                if r in avgrankwinrates: rankwinrates = rankwinrates.replace(r, f'{r}: {avgrankwinrates[r]}')
             open(f'{basedir2}By Player Rank.csv', 'w').write(f'Class,Champion,Player Rank: its average winrate,Champion Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + rankwinrates)
 
             open(f'{basedir2}Winrates By Talent (All Ranks).csv', 'w').write(f'{otherversion}\nSource code: https://github.com/lexxish/PaladinsRankedStats - Stats for patch: v{patch}\nClass,Champion,Talent,Winrate,Match Count,Confidence Interval -,Confidence Interval +\n' + str(talentwinrates).replace('"' , "'").replace("'), ('" , "\n").replace(", " , ",").replace("'," , ",").replace(",'" , ",")[3:-3])

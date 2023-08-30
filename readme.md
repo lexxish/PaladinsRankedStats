@@ -12,6 +12,7 @@ If you want to work on that thing hovewer here's a possible TODO list:
 * remove controller version since hi-rez removed controller queue
     * it also doesn't work because of Aevann1's implementation so controllergooglesheet is always empty
 * implement actual ratelimiting (for both gspread and requests to paladins api)
+* account for .csv fields for having commas. Right now Omen's card "More, More, More!" displays incorrectly
 ---
 # Installation
 0. Git clone
@@ -22,6 +23,7 @@ If you want to work on that thing hovewer here's a possible TODO list:
 5. [Get yourself a developer key at Hi-Rez](https://fs12.formsite.com/HiRez/form48/secure_index.html)
 6. Wait. It takes a few days
 7. While you wait you can make a new spreadsheet. Don't forget to give full access to anyone who might see it
-8. Fill the start of `PaladinsRankedStats.py` file with your data. `controllergooglesheetid` is not important
+8. Fill the start of `PaladinsRankedStats.py` file with your data. You can set `controllergooglesheetid` to your PC link, it's not going to be filled anyways. It is required to be filled though
 9. Set `firstday` to the start of this month. Not sure why though
-10. Start `PaladinsRankedStats.py`. You're done
+10. Make sure it's not anywhere between 0-2AM right now. Yes, this somehow matters
+11. Start `PaladinsRankedStats.py`. You're done
